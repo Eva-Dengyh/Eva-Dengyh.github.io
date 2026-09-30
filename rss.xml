@@ -4,9 +4,17 @@
         <description><![CDATA[Eva 的 AI 应用开发、工程实践与技术笔记。]]></description>
         <link>https://eva-dengyh.github.io</link>
         <generator>RSS for Node</generator>
-        <lastBuildDate>Wed, 30 Sep 2026 01:08:44 GMT</lastBuildDate>
+        <lastBuildDate>Wed, 30 Sep 2026 02:28:54 GMT</lastBuildDate>
         <atom:link href="https://eva-dengyh.github.io/rss.xml" rel="self" type="application/rss+xml"/>
         <language><![CDATA[zh-CN]]></language>
+        <item>
+            <title><![CDATA[FastSAM-Demo：基于 SAM 2.1 的全栈图像分割工程实践]]></title>
+            <description><![CDATA[FastSAM-Demo：基于 SAM 2.1 的全栈图像分割工程实践]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Wed, 11 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
         <item>
             <title><![CDATA[面向中小型企业内部系统的高并发架构设计思考]]></title>
             <description><![CDATA[面向中小型企业内部系统的高并发架构设计思考]]></description>
@@ -14,14 +22,6 @@
             <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/274212b5-d208-44b1-b254-124c31245e8e/</guid>
             <dc:creator><![CDATA[Eva]]></dc:creator>
             <pubDate>Tue, 10 Mar 2026 00:00:00 GMT</pubDate>
-        </item>
-        <item>
-            <title><![CDATA[FastSAM-Demo：基于 SAM 2.1 的全栈图像分割工程实践]]></title>
-            <description><![CDATA[FastSAM-Demo：基于 SAM 2.1 的全栈图像分割工程实践]]></description>
-            <link>https://eva-dengyh.github.io/zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/</link>
-            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/</guid>
-            <dc:creator><![CDATA[Eva]]></dc:creator>
-            <pubDate>Mon, 09 Mar 2026 00:00:00 GMT</pubDate>
         </item>
         <item>
             <title><![CDATA[Docker教程--Docker Compose vs Docker Swarm]]></title>
