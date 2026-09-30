@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="zh-CN" class="maximeheckel-dark"><head><meta charSet="utf-8" data-next-head=""/><meta charSet="utf-8"/><meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport" data-next-head=""/><meta name="robots" content="index,follow" data-next-head=""/><meta name="description" content="个人文章、知识笔记与开源项目。" data-next-head=""/><meta name="theme-color" content="#090a0e" data-next-head=""/><meta property="og:title" content="Eva Lab — 文章、项目与实验" data-next-head=""/><meta property="og:description" content="个人文章、知识笔记与开源项目。" data-next-head=""/><meta property="og:url" content="https://eva-dengyh.github.io" data-next-head=""/><meta property="og:type" content="website" data-next-head=""/><meta property="og:locale" content="zh_CN" data-next-head=""/><title data-next-head="">技术笔记｜《AI Agent开发：零基础构建复合智能体》知识梳理 · Eva Lab</title><link rel="canonical" href="https://eva-dengyh.github.io/zh/posts/ai-agent-notes-2026-03-17" data-next-head=""/><meta name="description" content="Eva Lab — 技术笔记｜《AI Agent开发：零基础构建复合智能体》知识梳理，个人写作与项目档案。" data-next-head=""/><link href="/favicon.svg" rel="icon" type="image/svg+xml"/><link rel="preload" href="/_next/static/media/0336a89fb4e7fc1d-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/><link rel="preload" href="/_next/static/media/c91adde9f78caceb-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/><link rel="preload" href="/_next/static/media/3f422d261a30c895-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/><link rel="preload" href="/_next/static/media/edb359f96cef57cc-s.p.woff2" as="font" type="font/woff2" crossorigin="anonymous" data-next-font="size-adjust"/><link rel="preload" href="/_next/static/css/7ee2ad4f1cac8ec1.css" as="style"/><style id="stitches">--sxs{--sxs:1 k-ksbDlz k-kLbiSv iWVZMG k-cBVbyC k-fRsylC k-bOTLEg k-fdUjdu}@media{@keyframes k-ksbDlz{from{height:0;opacity:0;transform:translateY(16px)}to{height:var(--collapsible-panel-height);opacity:1;transform:translateY(0px)}}@keyframes k-kLbiSv{from{height:var(--collapsible-panel-height);opacity:1;transform:translateY(0px)}to{height:0;opacity:0;transform:translateY(16px)}}:root{--border-radius-0:4px;--border-radius-1:8px;--border-radius-2:12px;--border-radius-3:16px;--space-0:0px;--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--space-6:32px;--space-7:40px;--space-8:48px;--space-9:56px;--space-10:64px;--space-11:80px;--space-12:96px;--space-13:128px;--space-14:256px;--space-15:512px;-webkit-font-smoothing:antialiased;--font-fallback:-apple-system, 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;--font-display:'Inter', var(--font-fallback);--font-mono:'Fira Code', monospace;--font-numeric:'Space Grotesk', var(--font-fallback);--font-size-1:14px;--font-size-3:16px;--font-size-4:18px;--font-size-5:20px;--font-size-6:24px;--font-size-7:32px;--font-size-8:44px;--font-weight-400:400;--font-weight-500:500;--font-weight-600:560}*{box-sizing:border-box}*:before{box-sizing:border-box}*:after{box-sizing:border-box}.maximeheckel-light{--base-hue:266;--white:oklch(100% 0 0);--gray-000:oklch(99.5% 0 var(--base-hue));--gray-100:oklch(99.24% 0.008 var(--base-hue));--gray-200:oklch(98.08% 0.008 var(--base-hue));--gray-300:oklch(95.94% 0.004 var(--base-hue));--gray-400:oklch(94.3% 0.005 var(--base-hue));--gray-500:oklch(91.83% 0.008 var(--base-hue));--gray-600:oklch(90.18% 0.009 var(--base-hue));--gray-700:oklch(87.68% 0.012 var(--base-hue));--gray-800:oklch(80.94% 0.019 var(--base-hue));--gray-900:oklch(62.57% 0.038 var(--base-hue));--gray-1000:oklch(50.13% 0.047 var(--base-hue));--gray-1100:oklch(40.47% 0.038 var(--base-hue));--gray-1200:oklch(19.83% 0.01 var(--base-hue));--blue-100:oklch(100% 0 var(--base-hue));--blue-200:oklch(98.91% 0.005 var(--base-hue));--blue-300:oklch(96.85% 0.013 var(--base-hue));--blue-400:oklch(93.66% 0.027 var(--base-hue));--blue-500:oklch(88.34% 0.052 var(--base-hue));--blue-600:oklch(82% 0.082 var(--base-hue));--blue-700:oklch(73.65% 0.124 var(--base-hue));--blue-800:oklch(64.6% 0.172 var(--base-hue));--blue-900:oklch(55.52% 0.223 var(--base-hue));--blue-1000:oklch(46.51% 0.225 var(--base-hue));--blue-1100:oklch(36.42% 0.168 var(--base-hue));--blue-1200:oklch(23.85% 0.101 var(--base-hue));--green-100:oklch(99.15% 0.012 170);--green-200:oklch(98.73% 0.017 170);--green-300:oklch(97.92% 0.028 170);--green-400:oklch(96.76% 0.046 170);--green-500:oklch(94.97% 0.073 170);--green-600:oklch(93.1% 0.102 170);--green-700:oklch(91.3% 0.134 170);--green-800:oklch(89.62% 0.167 170);--green-900:oklch(88.54% 0.19 170);--green-1000:oklch(78.76% 0.177 170);--green-1100:oklch(52.84% 0.117 170);--green-1200:oklch(26.65% 0.056 170);--red-100:oklch(98.89% 0.005 22);--red-200:oklch(97.93% 0.009 22);--red-300:oklch(95.73% 0.02 22);--red-400:oklch(92.67% 0.033 22);--red-500:oklch(87.55% 0.059 22);--red-600:oklch(81.57% 0.092 22);--red-700:oklch(74.19% 0.138 22);--red-800:oklch(67.08% 0.186 22);--red-900:oklch(56.25% 0.221 22);--red-1000:oklch(44.11% 0.171 22);--red-1100:oklch(28.99% 0.108 22);--red-1200:oklch(18.93% 0.066 22);--orange-100:oklch(98.05% 0.013 60);--orange-200:oklch(97.41% 0.017 60);--orange-300:oklch(96.13% 0.026 60);--orange-400:oklch(94.22% 0.039 60);--orange-500:oklch(91.12% 0.061 60);--orange-600:oklch(87.51% 0.088 60);--orange-700:oklch(83.5% 0.117 60);--orange-800:oklch(78.74% 0.151 60);--orange-900:oklch(74.12% 0.181 60);--orange-1000:oklch(63.71% 0.165 60);--orange-1100:oklch(54.63% 0.140 60);--orange-1200:oklch(31.24% 0.075 60);--pink-100:oklch(91.7% 0.052 352);--pink-200:oklch(90.69% 0.059 352);--pink-300:oklch(89.72% 0.06 352);--pink-400:oklch(86.75% 0.086 352);--pink-500:oklch(82.97% 0.114 352);--pink-600:oklch(77.72% 0.155 352);--pink-700:oklch(73.12% 0.194 352);--pink-800:oklch(68.84% 0.231 352);--pink-900:oklch(65.43% 0.257 352);--pink-1000:oklch(55.6% 0.24 352);--pink-1100:oklch(42.39% 0.195 352);--pink-1200:oklch(30.21% 0.138 352);--accent:var(--blue-900);--background:var(--gray-100);--header:oklch(from var(--gray-100) l c h / 40%);--emphasis:oklch(from var(--blue-900) l c h / 5%);--hyperlink:#2480ed;--foreground:oklch( from var(--gray-200) l c h / 100%);--danger:var(--red-900);--danger-emphasis:oklch(from var(--red-700) l c h / 10%);--warning:var(--orange-900);--warning-emphasis:oklch(from var(--orange-900) l c h / 7%);--success:var(--green-1100);--success-emphasis:oklch(from var(--green-900) l c h / 10%);--text-primary:var(--gray-1200);--text-secondary:var(--gray-1100);--text-tertiary:var(--gray-1000);--border-color:var(--gray-400);--card-background:var(--gray-200);--input-active:var(--blue-900);--input-background:var(--gray-000);--input-disabled:var(--gray-300);--input-border:var(--gray-500);--input-focus:var(--blue-800);--shadow-color:var(--local-shadow-color, 223deg 5% 80%);--code-snippet-background:var(--gray-200);--token-comment:var(--gray-1000);--token-selector:var(--blue-900);--token-symbol:var(--blue-1100);--token-operator:var(--gray-1000);--token-keyword:var(--blue-1000);--token-function:var(--pink-1000);--token-punctuation:var(--blue-900)}@supports not (color: rgb(from white r g b)){.maximeheckel-light{--header:oklch(99.24% 0.008 var(--base-hue) / 40%);--emphasis:oklch(64.6% 0.172 var(--base-hue) / 7%);--foreground:oklch(98.08% 0.008 var(--base-hue) / 100%);--danger-emphasis:oklch(91.3% 0.134 170 / 10%);--warning-emphasis:oklch(54.63% 0.140 60 / 10%);--success-emphasis:oklch(88.54% 0.19 170 / 10%)}}.maximeheckel-dark{--base-hue:262.04;--white:oklch(100% 0 0);--gray-000:oklch(12.92% 0.005 var(--base-hue));--gray-100:oklch(14.68% 0.01 var(--base-hue));--gray-200:oklch(16.75% 0.011 var(--base-hue));--gray-300:oklch(17.8% 0.012 var(--base-hue));--gray-400:oklch(24.84% 0.018 var(--base-hue));--gray-500:oklch(28.69% 0.023 var(--base-hue));--gray-600:oklch(35.33% 0.028 var(--base-hue));--gray-700:oklch(41.6% 0.035 var(--base-hue));--gray-800:oklch(48.49% 0.042 var(--base-hue));--gray-900:oklch(56.78% 0.05 var(--base-hue));--gray-1000:oklch(66.65% 0.04 var(--base-hue));--gray-1100:oklch(77.16% 0.028 var(--base-hue));--gray-1200:oklch(94.23% 0.006 var(--base-hue));--blue-100:oklch(100% 0 var(--base-hue));--blue-200:oklch(98.91% 0.005 var(--base-hue));--blue-300:oklch(96.85% 0.013 var(--base-hue));--blue-400:oklch(93.66% 0.027 var(--base-hue));--blue-500:oklch(88.34% 0.052 var(--base-hue));--blue-600:oklch(81.53% 0.078 var(--base-hue));--blue-700:oklch(71.65% 0.122 var(--base-hue));--blue-800:oklch(61.53% 0.1675 var(--base-hue));--blue-900:oklch(53.19% 0.212 var(--base-hue));--blue-1000:oklch(44.51% 0.216 var(--base-hue));--blue-1100:oklch(36.42% 0.168 var(--base-hue));--blue-1200:oklch(23.85% 0.101 var(--base-hue));--green-100:oklch(23.08% 0.04 170);--green-200:oklch(24.95% 0.04 170);--green-300:oklch(28.57% 0.056 170);--green-400:oklch(33.81% 0.067 170);--green-500:oklch(40.49% 0.081 170);--green-600:oklch(50.03% 0.101 170);--green-700:oklch(60.62% 0.123 170);--green-800:oklch(73.6% 0.150 170);--green-900:oklch(86.02% 0.176 170);--green-1000:oklch(89.3% 0.169 170);--green-1100:oklch(91.18% 0.134 170);--green-1200:oklch(94.49% 0.08 170);--red-100:oklch(20.11% 0.07 22);--red-200:oklch(21.27% 0.075 22);--red-300:oklch(23.51% 0.084 22);--red-400:oklch(26.84% 0.099 22);--red-500:oklch(31.03% 0.116 22);--red-600:oklch(37.24% 0.143 22);--red-700:oklch(43.14% 0.167 22);--red-800:oklch(51.82% 0.204 22);--red-900:oklch(60.12% 0.235 22);--red-1000:oklch(64.51% 0.204 22);--red-1100:oklch(73.3% 0.145 22);--red-1200:oklch(85.47% 0.071 22);--orange-100:oklch(20.38% 0.044 60);--orange-200:oklch(21.87% 0.048 60);--orange-300:oklch(24.79% 0.055 60);--orange-400:oklch(28.78% 0.067 60);--orange-500:oklch(34.43% 0.081 60);--orange-600:oklch(42.19% 0.101 60);--orange-700:oklch(50.38% 0.125 60);--orange-800:oklch(60.87% 0.153 60);--orange-900:oklch(70.93% 0.18 60);--orange-1000:oklch(76.91% 0.165 60);--orange-1100:oklch(83.38% 0.121 60);--orange-1200:oklch(90.99% 0.066 60);--pink-100:oklch(91.7% 0.052 352);--pink-200:oklch(90.69% 0.059 352);--pink-300:oklch(89.72% 0.06 352);--pink-400:oklch(86.75% 0.086 352);--pink-500:oklch(82.97% 0.114 352);--pink-600:oklch(77.72% 0.155 352);--pink-700:oklch(73.12% 0.194 352);--pink-800:oklch(68.84% 0.231 352);--pink-900:oklch(65.43% 0.257 352);--pink-1000:oklch(55.6% 0.24 352);--pink-1100:oklch(42.39% 0.195 352);--pink-1200:oklch(30.21% 0.138 352);--accent:var(--blue-800);--background:var(--gray-100);--header:oklch(from var(--gray-100) l c h / 40%);--emphasis:oklch(from var(--blue-800) l c h / 7%);--hyperlink:var(--blue-800);--foreground:var(--gray-300);--danger:var(--red-1000);--danger-emphasis:oklch(from var(--red-1000) l c h / 10%);--warning:var(--orange-900);--warning-emphasis:oklch(from var(--orange-900) l c h / 10%);--success:var(--green-900);--success-emphasis:;--text-primary:var(--blue-400);--text-secondary:var(--gray-1100);--text-tertiary:var(--gray-1000);--border-color:var(--gray-400);--card-background:var(--gray-200);--input-active:var(--blue-800);--input-background:var(--gray-000);--input-disabled:var(--gray-400);--input-border:var(--gray-600);--input-focus:var(--blue-900);--shadow-color:var(--local-shadow-color, 223deg 5% 1%);--code-snippet-background:var(--gray-200);--token-comment:var(--gray-1000);--token-selector:var(--blue-600);--token-symbol:var(--blue-800);--token-operator:var(--orange-1200);--token-keyword:var(--blue-700);--token-function:var(--pink-400);--token-punctuation:var(--blue-600)}@supports not (color: rgb(from white r g b)){.maximeheckel-dark{--header:oklch(18.68% 0.01 var(--base-hue) / 40%);--emphasis:oklch(64.6% 0.172 var(--base-hue) / 7%);--danger-emphasis:oklch(64.51% 0.204 22 / 10%);--warning-emphasis:oklch(76.91% 0.165 60 / 10%);--success-emphasis:oklch(86.02% 0.176 170 / 10%)}}@keyframes k-cBVbyC{0%{-webkit-clip-path:polygon(0 43%,83% 43%,83% 22%,23% 22%,23% 24%,91% 24%,91% 26%,18% 26%,18% 83%,29% 83%,29% 17%,41% 17%,41% 39%,18% 39%,18% 82%,54% 82%,54% 88%,19% 88%,19% 4%,39% 4%,39% 14%,76% 14%,76% 52%,23% 52%,23% 35%,19% 35%,19% 8%,36% 8%,36% 31%,73% 31%,73% 16%,1% 16%,1% 56%,50% 56%,50% 8%);clip-path:polygon(0 43%,83% 43%,83% 22%,23% 22%,23% 24%,91% 24%,91% 26%,18% 26%,18% 83%,29% 83%,29% 17%,41% 17%,41% 39%,18% 39%,18% 82%,54% 82%,54% 88%,19% 88%,19% 4%,39% 4%,39% 14%,76% 14%,76% 52%,23% 52%,23% 35%,19% 35%,19% 8%,36% 8%,36% 31%,73% 31%,73% 16%,1% 16%,1% 56%,50% 56%,50% 8%)}5%{-webkit-clip-path:polygon(0 53%,93% 53%,93% 62%,68% 62%,68% 37%,97% 37%,97% 89%,13% 89%,13% 45%,51% 45%,51% 88%,17% 88%,17% 54%,81% 54%,81% 75%,79% 75%,79% 76%,38% 76%,38% 28%,61% 28%,61% 12%,55% 12%,55% 62%,68% 62%,68% 51%,0 51%,0 92%,63% 92%,63% 4%,65% 4%);clip-path:polygon(0 53%,93% 53%,93% 62%,68% 62%,68% 37%,97% 37%,97% 89%,13% 89%,13% 45%,51% 45%,51% 88%,17% 88%,17% 54%,81% 54%,81% 75%,79% 75%,79% 76%,38% 76%,38% 28%,61% 28%,61% 12%,55% 12%,55% 62%,68% 62%,68% 51%,0 51%,0 92%,63% 92%,63% 4%,65% 4%)}30%{-webkit-clip-path:polygon(0 53%,93% 53%,93% 62%,68% 62%,68% 37%,97% 37%,97% 89%,13% 89%,13% 45%,51% 45%,51% 88%,17% 88%,17% 54%,81% 54%,81% 75%,79% 75%,79% 76%,38% 76%,38% 28%,61% 28%,61% 12%,55% 12%,55% 62%,68% 62%,68% 51%,0 51%,0 92%,63% 92%,63% 4%,65% 4%);clip-path:polygon(0 53%,93% 53%,93% 62%,68% 62%,68% 37%,97% 37%,97% 89%,13% 89%,13% 45%,51% 45%,51% 88%,17% 88%,17% 54%,81% 54%,81% 75%,79% 75%,79% 76%,38% 76%,38% 28%,61% 28%,61% 12%,55% 12%,55% 62%,68% 62%,68% 51%,0 51%,0 92%,63% 92%,63% 4%,65% 4%)}45%{-webkit-clip-path:polygon(0 33%,2% 33%,2% 69%,58% 69%,58% 94%,55% 94%,55% 25%,33% 25%,33% 85%,16% 85%,16% 19%,5% 19%,5% 20%,79% 20%,79% 96%,93% 96%,93% 50%,5% 50%,5% 74%,55% 74%,55% 57%,96% 57%,96% 59%,87% 59%,87% 65%,82% 65%,82% 39%,63% 39%,63% 92%,4% 92%,4% 36%,24% 36%,24% 70%,1% 70%,1% 43%,15% 43%,15% 28%,23% 28%,23% 71%,90% 71%,90% 86%,97% 86%,97% 1%,60% 1%,60% 67%,71% 67%,71% 91%,17% 91%,17% 14%,39% 14%,39% 30%,58% 30%,58% 11%,52% 11%,52% 83%,68% 83%);clip-path:polygon(0 33%,2% 33%,2% 69%,58% 69%,58% 94%,55% 94%,55% 25%,33% 25%,33% 85%,16% 85%,16% 19%,5% 19%,5% 20%,79% 20%,79% 96%,93% 96%,93% 50%,5% 50%,5% 74%,55% 74%,55% 57%,96% 57%,96% 59%,87% 59%,87% 65%,82% 65%,82% 39%,63% 39%,63% 92%,4% 92%,4% 36%,24% 36%,24% 70%,1% 70%,1% 43%,15% 43%,15% 28%,23% 28%,23% 71%,90% 71%,90% 86%,97% 86%,97% 1%,60% 1%,60% 67%,71% 67%,71% 91%,17% 91%,17% 14%,39% 14%,39% 30%,58% 30%,58% 11%,52% 11%,52% 83%,68% 83%)}76%{-webkit-clip-path:polygon(0 26%,15% 26%,15% 73%,72% 73%,72% 70%,77% 70%,77% 75%,8% 75%,8% 42%,4% 42%,4% 61%,17% 61%,17% 12%,26% 12%,26% 63%,73% 63%,73% 43%,90% 43%,90% 67%,50% 67%,50% 41%,42% 41%,42% 46%,50% 46%,50% 84%,96% 84%,96% 78%,49% 78%,49% 25%,63% 25%,63% 14%);clip-path:polygon(0 26%,15% 26%,15% 73%,72% 73%,72% 70%,77% 70%,77% 75%,8% 75%,8% 42%,4% 42%,4% 61%,17% 61%,17% 12%,26% 12%,26% 63%,73% 63%,73% 43%,90% 43%,90% 67%,50% 67%,50% 41%,42% 41%,42% 46%,50% 46%,50% 84%,96% 84%,96% 78%,49% 78%,49% 25%,63% 25%,63% 14%)}90%{-webkit-clip-path:polygon(0 41%,13% 41%,13% 6%,87% 6%,87% 93%,10% 93%,10% 13%,89% 13%,89% 6%,3% 6%,3% 8%,16% 8%,16% 79%,0 79%,0 99%,92% 99%,92% 90%,5% 90%,5% 60%,0 60%,0 48%,89% 48%,89% 13%,80% 13%,80% 43%,95% 43%,95% 19%,80% 19%,80% 85%,38% 85%,38% 62%);clip-path:polygon(0 41%,13% 41%,13% 6%,87% 6%,87% 93%,10% 93%,10% 13%,89% 13%,89% 6%,3% 6%,3% 8%,16% 8%,16% 79%,0 79%,0 99%,92% 99%,92% 90%,5% 90%,5% 60%,0 60%,0 48%,89% 48%,89% 13%,80% 13%,80% 43%,95% 43%,95% 19%,80% 19%,80% 85%,38% 85%,38% 62%)}1%,33%,47%,7%,78%,93%{-webkit-clip-path:none;clip-path:none}}@keyframes k-fRsylC{0%{opacity:0}5%{opacity:0.7}30%{opacity:0.4}45%{opacity:0.6}76%{opacity:0.4}90%{opacity:0.8}1%,33%,47%,7%,78%,93%{opacity:0}}@keyframes k-bOTLEg{0%{filter:blur(3px)}20%{filter:blur(0px)}50%{filter:blur(3px)}60%{filter:blur(0px)}90%{filter:blur(6px)}}@keyframes k-fdUjdu{0%{top:0;left:-20px}15%{top:10px;left:10px}60%{top:5px;left:-10px}75%{top:-5px;left:20px}to{top:10px;left:5px}}}--sxs{--sxs:2 c-PJLV c-jjHtmp c-fDhfVa c-hssraW}@media{.c-jjHtmp{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100dvh;width:100dvw;gap:12px}.c-fDhfVa{margin:0;padding:0;text-rendering:optimizeLegibility}.c-hssraW{-webkit-appearance:none;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;-webkit-user-select:none;user-select:none;display:flex;justify-content:center;align-items:center;flex-shrink:0;outline:none;cursor:pointer;border:0;font:inherit;font-size:var(--font-size-1);font-weight:var(--font-weight-500);height:34px;width:max-content;padding:0px 12px;transition:background 0.2s, transform 0.2s, color 0.2s, box-shadow 0.3s;border-radius:var(--border-radius-1);background:var(--button-background, white);color:var(--color, black);transform:scale(var(--button-scale, 1)) translateZ(0);box-shadow:var(--shadow, none);opacity:var(--opacity, 1);--shadow-hover-primary:0 2px 40px -4px var(--input-focus)}.c-hssraW svg{width:18px;height:18px}.c-hssraW:active{--button-scale:0.95}.c-hssraW:disabled{cursor:not-allowed;--button-scale:1.0 !important;--shadow:none !important;--opacity:0.4;filter:grayscale(0.25)}}--sxs{--sxs:3 c-fDhfVa-NUBYH-spaced-true c-fDhfVa-gFHBZW-family-display c-fDhfVa-fwWvhp-size-6 c-fDhfVa-eRpaQu-variant-primary c-fDhfVa-gYdJvx-weight-4 c-fDhfVa-jFCKZD-family-default c-fDhfVa-grGuE-size-3 c-fDhfVa-jmCwYG-weight-3 c-hssraW-kjFAml-hasIcon-none c-hssraW-lmHHAr-variant-primary}@media{.c-fDhfVa-NUBYH-spaced-true{letter-spacing:0.3px;line-height:1.75}.c-fDhfVa-gFHBZW-family-display{font-family:var(--font-display)}.c-fDhfVa-fwWvhp-size-6{font-size:var(--font-size-6)}.c-fDhfVa-eRpaQu-variant-primary{color:var(--text-primary)}.c-fDhfVa-gYdJvx-weight-4{font-weight:var(--font-weight-600)}.c-fDhfVa-jFCKZD-family-default{font-family:inherit}.c-fDhfVa-grGuE-size-3{font-size:var(--font-size-3)}.c-fDhfVa-jmCwYG-weight-3{font-weight:var(--font-weight-500)}.c-hssraW-kjFAml-hasIcon-none{padding:0px 12px}.c-hssraW-lmHHAr-variant-primary{--button-background:var(--accent);--color:var(--white);--shadow:inset 0px 1px 1px rgba(255, 255, 255, 0.3), inset 0px -1.5px 2px rgba(0, 0, 0, 0.3)}.c-hssraW-lmHHAr-variant-primary:hover:not(:disabled){--shadow:inset 0px 1px 1px rgba(255, 255, 255, 0.3), inset 0px -1.5px 2px rgba(0, 0, 0, 0.3), var(--shadow-hover-primary)}.c-hssraW-lmHHAr-variant-primary:focus-visible{--shadow:inset 0px 1px 1px rgba(255, 255, 255, 0.3), inset 0px -1.5px 2px rgba(0, 0, 0, 0.3), var(--shadow-hover-primary)}.c-hssraW-lmHHAr-variant-primary:active{--shadow:inset 0px -1px 1px rgba(255, 255, 255, 0.2), inset 0px -1.5px 2px rgba(0, 0, 0, 0.3)}}--sxs{--sxs:6 c-fDhfVa-ibPRUCL-css c-PJLV-ifIskgm-css c-fDhfVa-igwfOty-css c-PJLV-ikPkQxD-css}@media{.c-fDhfVa-ibPRUCL-css{letter-spacing:-0.028em;line-height:1;max-width:400px;text-wrap:balance;text-align:center}.c-PJLV-ifIskgm-css{position:relative;animation:k-cBVbyC 10s step-end infinite;overflow:visible}.c-PJLV-ifIskgm-css:before{content:attr(data-text);position:absolute;width:110%;z-index:-1;top:10px;left:15px;color:inherit;animation:k-cBVbyC 10s step-end infinite, k-fRsylC 10s step-end infinite, k-bOTLEg 13s step-end infinite, k-fdUjdu 15s step-end infinite}.c-PJLV-ifIskgm-css:after{content:attr(data-text);position:absolute;width:110%;z-index:-1;top:5px;left:-10px;color:inherit;animation:k-cBVbyC 10s step-end infinite, k-fRsylC 10s step-end infinite, k-bOTLEg 13s step-end infinite, k-fdUjdu 15s step-end infinite}.c-fDhfVa-igwfOty-css{letter-spacing:-0.25px;line-height:1.6}.c-PJLV-ikPkQxD-css{pointer-events:auto;margin-top:8px}}</style><link rel="stylesheet" href="/_next/static/css/7ee2ad4f1cac8ec1.css" data-n-g=""/><noscript data-n-css=""></noscript><script defer="" noModule="" src="/_next/static/chunks/polyfills-42372ed130431b0a.js"></script><script src="/_next/static/chunks/webpack-88b11124124c446e.js" defer=""></script><script src="/_next/static/chunks/framework-21f1d8006ca1a4d3.js" defer=""></script><script src="/_next/static/chunks/main-8ee0c3b7589e907e.js" defer=""></script><script src="/_next/static/chunks/pages/_app-b776b4b8a552846d.js" defer=""></script><script src="/_next/static/chunks/pages/%5Blocale%5D/posts/%5Bid%5D-792784ed4d041b84.js" defer=""></script><script src="/_next/static/DFA2S0DkR-eIgcyR4UyIi/_buildManifest.js" defer=""></script><script src="/_next/static/DFA2S0DkR-eIgcyR4UyIi/_ssgManifest.js" defer=""></script><style id="__jsx-4168086531">:root{--font-display:'inter', 'inter Fallback';--font-mono:'DepartureMono', 'DepartureMono Fallback';--font-mono-code:'FiraCode', 'FiraCode Fallback';font:100%/1.2888 var(--font-display);-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;--font-settings:'cv11' 1, 'cv05' 1;--font-variation-settings:'opsz' auto;font-feature-settings:var(--font-settings);font-variation-settings:var(--font-variation-settings);text-rendering:optimizeLegibility}</style></head><body class="maximeheckel-dark"><div id="__next"><div class="archive-page" lang="zh-CN"><header class="archive-header"><a class="archive-wordmark" href="/" aria-label="Eva Lab">E<span>·</span>L</a><nav aria-label="内容导航"><a href="/">首页</a><a href="/zh/about">关于</a><a href="/zh/posts" aria-current="page">文章</a><a href="/zh/projects">项目</a></nav></header><main class="archive-main"><div class="archive-intro"><p class="archive-eyebrow">EVA LAB / 个人档案</p><h1>技术笔记｜《AI Agent开发：零基础构建复合智能体》知识梳理</h1></div><div class="archive-post-meta"><time dateTime="2026-03-17">2026-03-17</time><a href="/zh/posts">← 返回文章列表</a></div><article class="archive-rich archive-article"><div class="archive-verbatim">在人工智能从“对话框”走向“行动派”的今天，AI Agent（智能体）正成为大模型落地的核心形态。本文参考梁志远的《AI Agent开发：零基础构建复合智能体》，依据智能体系统的标准开发范式，从架构设计、核心内核实现到工程化落地三个维度，剖析如何从零构建一个具备感知、决策与执行能力的复合智能体。
+
+图片
+图：智能体决策模块中的推理与行动规划机制
+
+第一部分：地基与原理
+1.1 智能体系统架构设计
+核心问题：什么是 Agent？它和普通的大模型有什么区别？
+
+AI Agent 的本质是感知-认知-执行（Perception-Cognition-Action, PCA）模型在语言智能体领域的具体化。它不再是被动应答的聊天机器人，而是具备主动决策能力的独立实体。
+
+为了支撑这一闭环，典型的系统架构采用分层部署：基础模型层（底层 LLM、Embedding、多模态） → 智能体能力层（核心逻辑） → 应用接口层（交互终端）。
+
+在智能体能力层中，五大核心功能模块各司其职：
+
+感知模块（Perception）： 连接外部世界的桥梁。负责将非结构化的自然语言（如用户的模糊指令）转换为结构化的意图表示或 JSON 对象。
+
+认知模块（Cognition）： 智能体的“大脑”与推理中心。涉及信息整合、逻辑推理、策略选择与任务规划。
+
+执行模块（Action）： 任务的“最后一公里”。将认知决策转换为具体动作（如 API 调用、数据库查询）。
+
+记忆模块（Memory）： 维持多轮交互与状态保持的关键，存储用户历史与运行中间状态。
+
+接口模块（Interface）： 确保系统可嵌入多种运行环境（Web、终端等）。
+
+图片
+图：智能体架构中的感知模块作用与连接机制
+1.2 大模型的能力边界与限制
+模型能做什么？有什么短板？
+
+1. 核心能力（模型能做什么）
+
+大模型是Agent的引擎，其推理能力决定了Agent的上限：
+
+逻辑与常识推理： 基于训练语料中的世界知识，判断命题合理性。
+
+思维链（Chain of Thought）： 在面对复杂问题时，生成中间步骤，逐步推导结论。
+
+条件与假设验证： 模拟“如果……那么……”的情境，这是任务规划的基础。
+
+2. 短板与应对（上下文窗口限制） 模型单次推理能看到的Token总量（上下文窗口）是有限的。为了在有限的预算内处理海量信息，必须采用窗口控制策略：
+
+Prompt压缩与摘要： 仅保留核心事实与其关键信息片段，对历史对话进行有损压缩。
+
+Token预算分配： 为System Prompt、用户输入、工具描述预先设定Token预算，防止某一部分挤占推理空间。
+
+滑动窗口与截断： 分段式输入，保留最近N轮对话，较远轮次转入长期记忆或丢弃。
+
+1.3 构建基本流程与任务建模
+怎么把用户的需求变成代码任务？
+
+1. 结构化输入 大模型本质是条件生成器，高质量的Prompt是任务建模的起点。一个标准的Prompt模板应包含：
+
+System Prompt： 定义角色边界（如“你是一个资深DBA”）。
+
+Instruction： 明确当前任务目标。
+
+Input Content： 提供任务所需的背景信息。
+
+Output Format： 强制模型输出JSON或特定XML标签，以便程序解析。
+
+2. 流程闭环 智能体的运行不是一次性的问答，而是“感知状态 -> 规划路径 -> 拆解步骤 -> 执行反馈”的循环。
+
+动态规划： 通过在Prompt中嵌入“状态标签”（如任务阶段：规划中），引导模型根据当前上下文决定是继续执行、分支处理还是终止任务。
+
+
+
+第二部分：核心组件详解
+2.1 四大模块的深度技术细节
+每个模块具体怎么写代码？哪四大模块？
+
+1. 感知模块：从文本到结构 感知不仅是“读”，更是“解析”。该模块利用Prompt解析器和辅助函数，将自然语言输入转化为系统可理解的结构化意图。
+
+技术点： 识别实体要素、抽取任务参数，并处理多模态输入（利用ViT等编码器将图像转为统一表示）。
+
+2. 决策模块（认知）：任务链拆解 这是最核心的逻辑单元。认知过程细分为四个步骤：
+
+意图识别与任务分类： 确定是查询、生成还是操作。
+
+任务分解： 将宏观目标拆解为子步骤序列（DAG或线性链）。
+
+工具选择： 根据子步骤目标，从工具库中匹配最合适的API。
+
+错误预判： 识别潜在失败路径，提前构造容错机制。
+
+3. 行动模块：以工具改变世界 行动模块包含工具注册、调度器与反馈管理。
+
+容错与重试机制： 外部API极不稳定。行动模块必须具备异常捕获能力。如果工具调用失败（如网络超时、参数错误），应触发自动重试或让模型根据报错信息重新生成参数（Self-Correction），而不是直接崩溃。
+
+4. 记忆模块：短期与长期的协作
+
+短期记忆（Short-term）： 存放在Prompt或内存变量中，包含最近几轮对话和中间变量。旨在维持语义连续性，解决指代消解问题。
+
+长期记忆（Long-term）： 基于向量数据库（Vector DB）如Chroma或FAISS。
+
+存： 将重要信息Embedding后存入库。
+
+取： 通过语义相似度检索（RAG），随时“捞”出相关历史知识。
+
+更新策略： 采用滚动更新或基于重要性评分进行记忆剪裁。
+
+图片
+图：融合通用知识与智能体知识的智能体记忆结构演化机制
+2.2 智能体的生命周期管理
+一个Agent从启动到关闭的全过程
+
+1. 初始化（Initialization） Agent启动时需加载模型配置（Temperature, Max Tokens）、注册工具函数表、并加载默认的系统记忆。
+
+2. 运行中：状态追踪（State Tracking）
+
+Session ID： 每个会话必须有唯一标识。
+
+断点续传： 复杂任务往往跨越长时间周期。系统需周期性将“恢复状态（Resumption State）”持久化存储。一旦中断，可重建Prompt上下文，恢复现场继续执行。
+
+3. 注销（Termination） 任务完成后，触发清理操作：释放数据库连接、清除临时缓存、持久化必要的日志，确保系统资源回收。
+
+2.3 与外部系统的集成
+Agent怎么跟外面的世界打交道？
+
+智能体通过以下方式与物理/数字世界交互：
+
+API调用： 将用户指令映射为RESTful HTTP请求。技术上常使用Function Calling标准，定义函数结构体由模型填充参数。
+
+数据库交互： 遵循分层设计：语义解析 -> 生成SQL -> 执行查询 -> 结果写入记忆。严禁直接让LLM无限制操作DB。
+
+文件系统与沙箱： 涉及文件读写或代码执行（Code Interpreter）时，必须在隔离的沙箱环境（Docker容器或虚拟环境）中运行，防止恶意指令破坏宿主机。
+
+
+
+第三部分：工程优化与安全
+3.1 API 调用设计模式
+怎么调大模型更高效？
+
+1. 流式传输 为了解决大模型推理延迟高的问题，采用流式响应机制（Server-Sent Events）。像打字机一样逐个Token输出，让用户在完整结果生成前就能看到进度，通过提升首字响应速度优化体验。
+
+2. 上下文缓存与并发 对高频访问的基础知识进行预处理缓存；在处理非依赖性子任务时，设计并行调用链路以提升吞吐量。
+
+3.2 安全与内容控制
+怎么防止Agent乱说话或干坏事？
+
+1. 敏感词过滤（红线防御）
+
+静态防御： 使用Aho-Corasick自动机算法对输入输出进行高效的关键词匹配（违禁词库）。
+
+动态防御： 结合语义分析模型，拦截隐晦的违规指令。
+
+2. 防幻觉与可信度评估
+
+置信度打分： 对模型生成的Token序列进行概率打分，低分内容触发拦截。
+
+一致性校验： 对同一问题进行多次不同Prompt的询问，对比答案一致性。
+
+引用验证： 强制模型在回答中通过RAG机制引用知识库来源，若无来源则标记为不可信，进行人工接管。
+
+
+
+结语
+以上就是基于梁志远老师《AI Agent开发：零基础构建复合智能体》前两章梳理的核心脉络。从架构设计到工程落地，希望能帮你把 Agent 的内部逻辑理顺。当然，如果想看更底层的代码实现，还是推荐去翻翻原书。
+
+
+
+
+
+暂无评论</div>
+</article></main><footer class="archive-footer"><span>© <!-- -->2026<!-- --> Eva Lab</span><span>内容整理自旧站中英文页面，保留原始发表日期。</span></footer></div></div><script id="__NEXT_DATA__" type="application/json">{"props":{"pageProps":{"locale":"zh","id":"ai-agent-notes-2026-03-17","title":"技术笔记｜《AI Agent开发：零基础构建复合智能体》知识梳理","date":"2026-03-17","html":"\u003cdiv class=\"archive-verbatim\"\u003e在人工智能从“对话框”走向“行动派”的今天，AI Agent（智能体）正成为大模型落地的核心形态。本文参考梁志远的《AI Agent开发：零基础构建复合智能体》，依据智能体系统的标准开发范式，从架构设计、核心内核实现到工程化落地三个维度，剖析如何从零构建一个具备感知、决策与执行能力的复合智能体。\n\n图片\n图：智能体决策模块中的推理与行动规划机制\n\n第一部分：地基与原理\n1.1 智能体系统架构设计\n核心问题：什么是 Agent？它和普通的大模型有什么区别？\n\nAI Agent 的本质是感知-认知-执行（Perception-Cognition-Action, PCA）模型在语言智能体领域的具体化。它不再是被动应答的聊天机器人，而是具备主动决策能力的独立实体。\n\n为了支撑这一闭环，典型的系统架构采用分层部署：基础模型层（底层 LLM、Embedding、多模态） → 智能体能力层（核心逻辑） → 应用接口层（交互终端）。\n\n在智能体能力层中，五大核心功能模块各司其职：\n\n感知模块（Perception）： 连接外部世界的桥梁。负责将非结构化的自然语言（如用户的模糊指令）转换为结构化的意图表示或 JSON 对象。\n\n认知模块（Cognition）： 智能体的“大脑”与推理中心。涉及信息整合、逻辑推理、策略选择与任务规划。\n\n执行模块（Action）： 任务的“最后一公里”。将认知决策转换为具体动作（如 API 调用、数据库查询）。\n\n记忆模块（Memory）： 维持多轮交互与状态保持的关键，存储用户历史与运行中间状态。\n\n接口模块（Interface）： 确保系统可嵌入多种运行环境（Web、终端等）。\n\n图片\n图：智能体架构中的感知模块作用与连接机制\n1.2 大模型的能力边界与限制\n模型能做什么？有什么短板？\n\n1. 核心能力（模型能做什么）\n\n大模型是Agent的引擎，其推理能力决定了Agent的上限：\n\n逻辑与常识推理： 基于训练语料中的世界知识，判断命题合理性。\n\n思维链（Chain of Thought）： 在面对复杂问题时，生成中间步骤，逐步推导结论。\n\n条件与假设验证： 模拟“如果……那么……”的情境，这是任务规划的基础。\n\n2. 短板与应对（上下文窗口限制） 模型单次推理能看到的Token总量（上下文窗口）是有限的。为了在有限的预算内处理海量信息，必须采用窗口控制策略：\n\nPrompt压缩与摘要： 仅保留核心事实与其关键信息片段，对历史对话进行有损压缩。\n\nToken预算分配： 为System Prompt、用户输入、工具描述预先设定Token预算，防止某一部分挤占推理空间。\n\n滑动窗口与截断： 分段式输入，保留最近N轮对话，较远轮次转入长期记忆或丢弃。\n\n1.3 构建基本流程与任务建模\n怎么把用户的需求变成代码任务？\n\n1. 结构化输入 大模型本质是条件生成器，高质量的Prompt是任务建模的起点。一个标准的Prompt模板应包含：\n\nSystem Prompt： 定义角色边界（如“你是一个资深DBA”）。\n\nInstruction： 明确当前任务目标。\n\nInput Content： 提供任务所需的背景信息。\n\nOutput Format： 强制模型输出JSON或特定XML标签，以便程序解析。\n\n2. 流程闭环 智能体的运行不是一次性的问答，而是“感知状态 -\u003e 规划路径 -\u003e 拆解步骤 -\u003e 执行反馈”的循环。\n\n动态规划： 通过在Prompt中嵌入“状态标签”（如任务阶段：规划中），引导模型根据当前上下文决定是继续执行、分支处理还是终止任务。\n\n\n\n第二部分：核心组件详解\n2.1 四大模块的深度技术细节\n每个模块具体怎么写代码？哪四大模块？\n\n1. 感知模块：从文本到结构 感知不仅是“读”，更是“解析”。该模块利用Prompt解析器和辅助函数，将自然语言输入转化为系统可理解的结构化意图。\n\n技术点： 识别实体要素、抽取任务参数，并处理多模态输入（利用ViT等编码器将图像转为统一表示）。\n\n2. 决策模块（认知）：任务链拆解 这是最核心的逻辑单元。认知过程细分为四个步骤：\n\n意图识别与任务分类： 确定是查询、生成还是操作。\n\n任务分解： 将宏观目标拆解为子步骤序列（DAG或线性链）。\n\n工具选择： 根据子步骤目标，从工具库中匹配最合适的API。\n\n错误预判： 识别潜在失败路径，提前构造容错机制。\n\n3. 行动模块：以工具改变世界 行动模块包含工具注册、调度器与反馈管理。\n\n容错与重试机制： 外部API极不稳定。行动模块必须具备异常捕获能力。如果工具调用失败（如网络超时、参数错误），应触发自动重试或让模型根据报错信息重新生成参数（Self-Correction），而不是直接崩溃。\n\n4. 记忆模块：短期与长期的协作\n\n短期记忆（Short-term）： 存放在Prompt或内存变量中，包含最近几轮对话和中间变量。旨在维持语义连续性，解决指代消解问题。\n\n长期记忆（Long-term）： 基于向量数据库（Vector DB）如Chroma或FAISS。\n\n存： 将重要信息Embedding后存入库。\n\n取： 通过语义相似度检索（RAG），随时“捞”出相关历史知识。\n\n更新策略： 采用滚动更新或基于重要性评分进行记忆剪裁。\n\n图片\n图：融合通用知识与智能体知识的智能体记忆结构演化机制\n2.2 智能体的生命周期管理\n一个Agent从启动到关闭的全过程\n\n1. 初始化（Initialization） Agent启动时需加载模型配置（Temperature, Max Tokens）、注册工具函数表、并加载默认的系统记忆。\n\n2. 运行中：状态追踪（State Tracking）\n\nSession ID： 每个会话必须有唯一标识。\n\n断点续传： 复杂任务往往跨越长时间周期。系统需周期性将“恢复状态（Resumption State）”持久化存储。一旦中断，可重建Prompt上下文，恢复现场继续执行。\n\n3. 注销（Termination） 任务完成后，触发清理操作：释放数据库连接、清除临时缓存、持久化必要的日志，确保系统资源回收。\n\n2.3 与外部系统的集成\nAgent怎么跟外面的世界打交道？\n\n智能体通过以下方式与物理/数字世界交互：\n\nAPI调用： 将用户指令映射为RESTful HTTP请求。技术上常使用Function Calling标准，定义函数结构体由模型填充参数。\n\n数据库交互： 遵循分层设计：语义解析 -\u003e 生成SQL -\u003e 执行查询 -\u003e 结果写入记忆。严禁直接让LLM无限制操作DB。\n\n文件系统与沙箱： 涉及文件读写或代码执行（Code Interpreter）时，必须在隔离的沙箱环境（Docker容器或虚拟环境）中运行，防止恶意指令破坏宿主机。\n\n\n\n第三部分：工程优化与安全\n3.1 API 调用设计模式\n怎么调大模型更高效？\n\n1. 流式传输 为了解决大模型推理延迟高的问题，采用流式响应机制（Server-Sent Events）。像打字机一样逐个Token输出，让用户在完整结果生成前就能看到进度，通过提升首字响应速度优化体验。\n\n2. 上下文缓存与并发 对高频访问的基础知识进行预处理缓存；在处理非依赖性子任务时，设计并行调用链路以提升吞吐量。\n\n3.2 安全与内容控制\n怎么防止Agent乱说话或干坏事？\n\n1. 敏感词过滤（红线防御）\n\n静态防御： 使用Aho-Corasick自动机算法对输入输出进行高效的关键词匹配（违禁词库）。\n\n动态防御： 结合语义分析模型，拦截隐晦的违规指令。\n\n2. 防幻觉与可信度评估\n\n置信度打分： 对模型生成的Token序列进行概率打分，低分内容触发拦截。\n\n一致性校验： 对同一问题进行多次不同Prompt的询问，对比答案一致性。\n\n引用验证： 强制模型在回答中通过RAG机制引用知识库来源，若无来源则标记为不可信，进行人工接管。\n\n\n\n结语\n以上就是基于梁志远老师《AI Agent开发：零基础构建复合智能体》前两章梳理的核心脉络。从架构设计到工程落地，希望能帮你把 Agent 的内部逻辑理顺。当然，如果想看更底层的代码实现，还是推荐去翻翻原书。\n\n\n\n\n\n暂无评论\u003c/div\u003e\n","hasTranslation":false},"__N_SSG":true},"page":"/[locale]/posts/[id]","query":{"locale":"zh","id":"ai-agent-notes-2026-03-17"},"buildId":"DFA2S0DkR-eIgcyR4UyIi","isFallback":false,"gsp":true,"scriptLoader":[]}</script></body></html>
