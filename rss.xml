@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><rss xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+        <title><![CDATA[Eva Lab · 文章]]></title>
+        <description><![CDATA[Eva 的 AI 应用开发、工程实践与技术笔记。]]></description>
+        <link>https://eva-dengyh.github.io</link>
+        <generator>RSS for Node</generator>
+        <lastBuildDate>Wed, 30 Sep 2026 01:08:44 GMT</lastBuildDate>
+        <atom:link href="https://eva-dengyh.github.io/rss.xml" rel="self" type="application/rss+xml"/>
+        <language><![CDATA[zh-CN]]></language>
+        <item>
+            <title><![CDATA[面向中小型企业内部系统的高并发架构设计思考]]></title>
+            <description><![CDATA[面向中小型企业内部系统的高并发架构设计思考]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/274212b5-d208-44b1-b254-124c31245e8e/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/274212b5-d208-44b1-b254-124c31245e8e/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Tue, 10 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[FastSAM-Demo：基于 SAM 2.1 的全栈图像分割工程实践]]></title>
+            <description><![CDATA[FastSAM-Demo：基于 SAM 2.1 的全栈图像分割工程实践]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Mon, 09 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[Docker教程--Docker Compose vs Docker Swarm]]></title>
+            <description><![CDATA[Docker教程--Docker Compose vs Docker Swarm]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/c03741fe-dff8-4bb6-9536-3eef71027f76/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/c03741fe-dff8-4bb6-9536-3eef71027f76/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Thu, 05 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[Docker教程--基础命令概念&Dockerfile]]></title>
+            <description><![CDATA[Docker教程--基础命令概念&Dockerfile]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/caaa7fbc-0d8f-4e18-8842-f1402043278d/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/caaa7fbc-0d8f-4e18-8842-f1402043278d/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Wed, 04 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[LangGraph--通过图结构重新定义LLM应用]]></title>
+            <description><![CDATA[LangGraph--通过图结构重新定义LLM应用]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/3091fcaf-4813-43b2-8e94-d1b291a5ca18/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/3091fcaf-4813-43b2-8e94-d1b291a5ca18/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Tue, 03 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[Nginx 全解析：反向代理、负载均衡与动静分离一文通]]></title>
+            <description><![CDATA[Nginx 全解析：反向代理、负载均衡与动静分离一文通]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/355611ce-3ef3-4df9-ac2c-84d9c29d6e15/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/355611ce-3ef3-4df9-ac2c-84d9c29d6e15/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Mon, 02 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[Claude Code CLI 快速教程：从环境搭建到批量处理的实用指令集]]></title>
+            <description><![CDATA[Claude Code CLI 快速教程：从环境搭建到批量处理的实用指令集]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/440f9ca6-8fea-4de3-a71f-9facf434f3e0/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/440f9ca6-8fea-4de3-a71f-9facf434f3e0/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Sun, 01 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[GitHub 主页进化论：三步定制专属 README 模版]]></title>
+            <description><![CDATA[GitHub 主页进化论：三步定制专属 README 模版]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/484a3aa7-e6b9-4f0f-a43f-36dafd39becd/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/484a3aa7-e6b9-4f0f-a43f-36dafd39becd/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Sun, 01 Mar 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[Ubuntu 安装 Redis 并配置远程连接指南]]></title>
+            <description><![CDATA[Ubuntu 安装 Redis 并配置远程连接指南]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/ffcca8c9-7b52-464d-b257-96fa03d8ef06/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/ffcca8c9-7b52-464d-b257-96fa03d8ef06/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Sat, 28 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[Redis -- 用问答的方式拆解分布式缓存的核心（上）]]></title>
+            <description><![CDATA[Redis -- 用问答的方式拆解分布式缓存的核心（上）]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/eab241f8-5a73-4c8e-880e-0b0cd91375d5/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/eab241f8-5a73-4c8e-880e-0b0cd91375d5/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Fri, 27 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[LangChain架构浅析：从零构建 AI 智能应用的底层逻辑]]></title>
+            <description><![CDATA[LangChain架构浅析：从零构建 AI 智能应用的底层逻辑]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/d629b4cb-30ef-42b4-a9fe-169d11a97ad0/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/d629b4cb-30ef-42b4-a9fe-169d11a97ad0/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Thu, 26 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[服务器连接指南： SSH公私钥认证]]></title>
+            <description><![CDATA[服务器连接指南： SSH公私钥认证]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/7556bb7e-eb0f-4203-b9c8-be0637748311/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/7556bb7e-eb0f-4203-b9c8-be0637748311/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Thu, 26 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+        <item>
+            <title><![CDATA[RAG 实战：从手写 MVP 链路到生产级优化]]></title>
+            <description><![CDATA[RAG 实战：从手写 MVP 链路到生产级优化]]></description>
+            <link>https://eva-dengyh.github.io/zh/posts/7226751b-ae6b-45bb-9c76-3ac058e70d90/</link>
+            <guid isPermaLink="false">https://eva-dengyh.github.io/zh/posts/7226751b-ae6b-45bb-9c76-3ac058e70d90/</guid>
+            <dc:creator><![CDATA[Eva]]></dc:creator>
+            <pubDate>Wed, 25 Feb 2026 00:00:00 GMT</pubDate>
+        </item>
+    </channel>
+</rss>
