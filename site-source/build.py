@@ -107,7 +107,11 @@ def project_preview(page, locale):
 def listing(posts, locale, home, project):
     text = TEXT[locale]
     intro = f'''<section class="intro"><div><p class="eyebrow">{text['role']}</p><h1>{text['hello']}</h1><p class="intro-text">{CONFIG['intro'][locale]}</p>
-<div class="social"><a href="{CONFIG['github']}">GitHub <span>↗</span></a><a href="/{locale}/about/">{text['about']} <span>↗</span></a><a href="/rss.xml">{text['feed']} <span>↗</span></a></div></div><div class="intro-index" aria-hidden="true"><span class="code-symbol">&lt;/&gt;</span><span>BUILD. LEARN. WRITE.</span></div></section>''' if home else f'<section class="page-intro"><p class="eyebrow">WRITING / ARCHIVE</p><h1>{text["all"]}<span class="total">{len(posts):02}</span></h1><p>{text["intro"]}</p></section>'
+<div class="social"><a href="{CONFIG['github']}">GitHub <span>↗</span></a><a href="/{locale}/about/">{text['about']} <span>↗</span></a><a href="/rss.xml">{text['feed']} <span>↗</span></a></div></div><div class="intro-code" aria-hidden="true"><div class="code-filename"><span>eva.ts</span><span class="code-dot"></span></div><pre><span class="syntax-comment">// always a work in progress</span>
+<span class="syntax-keyword">const</span> eva = {{
+  role: <span class="syntax-string">"developer"</span>,
+  focus: <span class="syntax-string">"AI &amp; software"</span>
+}};</pre></div></section>''' if home else f'<section class="page-intro"><p class="eyebrow">WRITING / ARCHIVE</p><h1>{text["all"]}<span class="total">{len(posts):02}</span></h1><p>{text["intro"]}</p></section>'
     search = f'''<div class="search-wrap"><label for="search" class="sr-only">{text['search']}</label><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="{text['placeholder']}" autocomplete="off"><span class="search-hint" aria-hidden="true">/</span></div>'''
     heading = text['latest'] if home else text['posts']
     return f'''{intro}<section class="writing" data-listing data-preview-limit="{6 if home else 0}"><div class="writing-main"><div class="section-heading"><h2>{heading}<span class="total">{len(posts):02}</span></h2><a href="/{locale}/posts/">{text['all']} ↗</a></div>

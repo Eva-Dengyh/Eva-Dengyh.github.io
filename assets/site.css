@@ -132,7 +132,7 @@ a:focus-visible,button:focus-visible,input:focus-visible {
 }
 .intro {
   display:grid;
-  grid-template-columns:1fr 190px;
+  grid-template-columns:1fr 230px;
   gap:60px;
   padding:67px 0 60px;
   border-bottom:1px solid var(--line)
@@ -170,25 +170,39 @@ a:focus-visible,button:focus-visible,input:focus-visible {
   font-size:11px;
   color:#90a0aa
 }
-.intro-index {
+.intro-code {
+  align-self:center;
+  background:#f1f4f2;
+  border:1px solid #e3e9e5;
+  border-radius:5px;
+  overflow:hidden;
+  transform:rotate(-2deg);
+}
+.code-filename {
   display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  flex-direction:column;
-  gap:12px;
-  color:#a2b1b5
+  align-items:center;
+  justify-content:space-between;
+  padding:9px 15px;
+  border-bottom:1px solid #e1e7e3;
+  color:#7e8d86;
+  font:10px var(--mono);
 }
-.code-symbol {
-  font:300 66px/1.2 var(--mono);
-  letter-spacing:-8px;
-  color:#d2dcd8;
-  margin-right:4px
+.code-dot {
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  background:#87a294;
 }
-.intro-index>span:last-child {
-  font:8px var(--mono);
-  letter-spacing:1.6px;
-  color:#98a5a9
+.intro-code pre {
+  margin:0;
+  padding:15px;
+  color:#53645d;
+  font:10px/2.1 var(--mono);
+  white-space:pre;
 }
+.syntax-comment { color:#8a9890; }
+.syntax-keyword { color:#58768c; }
+.syntax-string { color:#4f7c69; }
 .writing {
   display:grid;
   grid-template-columns:minmax(0,1fr) 192px;
@@ -751,7 +765,7 @@ a:focus-visible,button:focus-visible,input:focus-visible {
     padding-left:18px
   }
   .intro {
-    grid-template-columns:1fr 100px;
+    grid-template-columns:1fr 200px;
     gap:25px;
     padding:45px 0
   }
@@ -761,12 +775,9 @@ a:focus-visible,button:focus-visible,input:focus-visible {
   .intro-text {
     font-size:14px
   }
-  .intro-index>span:last-child {
-    font-size:6px;
-    letter-spacing:.8px
-  }
-  .code-symbol {
-    font-size:47px
+  .intro-code pre {
+    font-size:9px;
+    padding:12px;
   }
   .writing {
     grid-template-columns:minmax(0,1fr) 150px;
@@ -856,7 +867,7 @@ a:focus-visible,button:focus-visible,input:focus-visible {
     font-size:13px;
     line-height:1.95
   }
-  .intro-index {
+  .intro-code {
     display:none
   }
   .social {
