@@ -11,8 +11,8 @@ import xml.etree.ElementTree as ET
 SOURCE = Path(__file__).resolve().parent
 CONFIG = json.loads((SOURCE / 'site.json').read_text())
 TEXT = {
- 'zh': dict(home='首页', posts='文章', projects='项目', about='关于', hello='你好，我是 Eva。', role='程序员 / AI 应用开发', latest='最近的文章', all='全部文章', topics='按主题阅读', archive='归档', intro='在这里，边做边记录。', search='搜索文章', placeholder='搜索标题、关键词…', empty='没有找到相关文章，试试其他关键词。', count='篇文章', clear='全部主题', back='返回文章列表', toc='本文目录', minute='分钟阅读', top='回到顶部 ↑', feed='RSS 订阅', note='学习、构建，持续记录。', more='查看全部项目', none='尚无英文译文', project_intro='一些把想法付诸实践的尝试。代码、工具，以及持续迭代的项目。', about_intro='关于我，以及一路走来的经历。', filter='文章筛选', result='篇匹配', excerpt='阅读这篇笔记，了解完整的实践过程。'),
- 'en': dict(home='Home', posts='Writing', projects='Projects', about='About', hello='Hi, I’m Eva.', role='SOFTWARE DEVELOPER / AI APPLICATIONS', latest='Recent writing', all='All writing', topics='Explore topics', archive='Archive', intro='Learning by building. Thinking in writing.', search='Search writing', placeholder='Search titles or keywords…', empty='No matching articles. Try another keyword.', count='articles', clear='All topics', back='Back to writing', toc='On this page', minute='min read', top='Back to top ↑', feed='RSS feed (Chinese)', note='Learning, building, and taking notes.', more='All projects', none='No English translation yet', project_intro='Ideas turned into working software. Open-source tools and projects, built through practice.', about_intro='A little about me and the path so far.', filter='Filter writing', result='matches', excerpt='Read the full note for the details and practical experience.')
+ 'zh': dict(wechat='公众号', home='首页', posts='文章', projects='项目', about='关于', hello='你好，我是 Eva。', role='程序员 / AI 应用开发', latest='最近的文章', all='全部文章', topics='按主题阅读', archive='归档', intro='在这里，边做边记录。', search='搜索文章', placeholder='搜索标题、关键词…', empty='没有找到相关文章，试试其他关键词。', count='篇文章', clear='全部主题', back='返回文章列表', toc='本文目录', minute='分钟阅读', top='回到顶部 ↑', feed='RSS 订阅', note='学习、构建，持续记录。', more='查看全部项目', none='尚无英文译文', project_intro='一些把想法付诸实践的尝试。代码、工具，以及持续迭代的项目。', about_intro='关于我，以及一路走来的经历。', filter='文章筛选', result='篇匹配', excerpt='阅读这篇笔记，了解完整的实践过程。'),
+ 'en': dict(wechat='WeChat', home='Home', posts='Writing', projects='Projects', about='About', hello='Hi, I’m Eva.', role='SOFTWARE DEVELOPER / AI APPLICATIONS', latest='Recent writing', all='All writing', topics='Explore topics', archive='Archive', intro='Learning by building. Thinking in writing.', search='Search writing', placeholder='Search titles or keywords…', empty='No matching articles. Try another keyword.', count='articles', clear='All topics', back='Back to writing', toc='On this page', minute='min read', top='Back to top ↑', feed='RSS feed (Chinese)', note='Learning, building, and taking notes.', more='All projects', none='No English translation yet', project_intro='Ideas turned into working software. Open-source tools and projects, built through practice.', about_intro='A little about me and the path so far.', filter='Filter writing', result='matches', excerpt='Read the full note for the details and practical experience.')
 }
 
 def plain(html):
@@ -101,7 +101,7 @@ def sidebar(posts, locale):
 def profile_home(page, locale):
     text = TEXT[locale]
     return f'''<section class="page-intro"><p class="eyebrow">ABOUT / EVA</p><h1>{text['hello']}</h1>
-<div class="social"><a href="/{locale}/posts/">{text['posts']} ↗</a><a href="/{locale}/projects/">{text['projects']} ↗</a><a href="{CONFIG['github']}">GitHub ↗</a></div></section>
+<div class="social"><a href="/{locale}/posts/">{text['posts']} ↗</a><a href="/{locale}/projects/">{text['projects']} ↗</a><a href="{CONFIG['github']}">GitHub ↗</a><a href="{CONFIG['wechat']}">{text['wechat']} ↗</a></div></section>
 <div class="prose about-content">{page['html']}</div>'''
 
 def listing(posts, locale):

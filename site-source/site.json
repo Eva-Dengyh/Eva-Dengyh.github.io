@@ -2,6 +2,7 @@
   "name": "Eva Lab",
   "url": "https://eva-dengyh.github.io",
   "github": "https://github.com/Eva-Dengyh",
+  "wechat": "https://mp.weixin.qq.com/s/vQjVkf-hg1JCVtVMFltYoA",
   "year": 2026,
   "intro": {"zh": "关注 AI 应用与软件开发，喜欢把想法做成可以使用的东西。这里记录我的学习、项目实践，以及开发过程中的思考。", "en": "I build AI applications and software, turning ideas into things people can use. This is where I share what I learn, build, and figure out along the way."},
   "topics": {
