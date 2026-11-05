@@ -1,0 +1,67 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setting Up a macOS Terminal: Suggestions, Syntax Highlighting, and Themes · Eva Lab</title><meta name="description" content="Environment: Apple Silicon Mac · zsh · Homebrew Prerequisites Make sure Homebrew is installed. If it is not, r…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/macos-terminal-setup/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/macos-terminal-setup/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/macos-terminal-setup/">
+<meta property="og:title" content="Setting Up a macOS Terminal: Suggestions, Syntax Highlighting, and Themes"><meta property="og:description" content="Environment: Apple Silicon Mac · zsh · Homebrew Prerequisites Make sure Homebrew is installed. If it is not, r…">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/macos-terminal-setup/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Setting Up a macOS Terminal: Suggestions, Syntax Highlighting, and Themes", "datePublished": "2026-04-28", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/macos-terminal-setup/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/macos-terminal-setup/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/macos-terminal-setup/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">Developer tools</p><h1>Setting Up a macOS Terminal: Suggestions, Syntax Highlighting, and Themes</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-28">2026.04.28</time><span>·</span><span>4 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><blockquote><p>Environment: Apple Silicon Mac · zsh · Homebrew</p></blockquote><img alt="Configured macOS terminal" decoding="async" loading="lazy" src="/assets/posts/macos-terminal-setup/image-001.png">
+<span class="heading-anchor" id="section-0"></span><h2>Prerequisites</h2><p>Make sure Homebrew is installed. If it is not, run:</p><pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre>
+<span class="heading-anchor" id="section-1"></span><h2>Step 1: Install Oh My Zsh</h2><pre><code>sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"</code></pre><p>After installation, the terminal switches to the new zsh configuration and creates <code>~/.zshrc</code>.</p>
+<span class="heading-anchor" id="section-2"></span><h2>Step 2: Install the Powerlevel10k Theme</h2><pre><code>git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k</code></pre><p>Edit <code>~/.zshrc</code>, find the <code>ZSH_THEME</code> line, and change it to:</p><pre><code># 找到这一行
+ZSH_THEME="robbyrussell"
+
+# 改为
+ZSH_THEME="powerlevel10k/powerlevel10k"</code></pre>
+<span class="heading-anchor" id="section-3"></span><h2>Step 3: Install a Nerd Font</h2><p>Powerlevel10k needs a font with icon support. Install the Nerd Fonts version of Meslo through Homebrew:</p><pre><code>brew install --cask font-meslo-lg-nerd-font</code></pre>
+<blockquote><p>📝 The font installed by this cask appears in the system as <strong>MesloLGS Nerd Font</strong>, with Regular, Bold, Italic, and Bold Italic variants. Its source differs slightly from the “MesloLGS NF” mentioned in the official P10k documentation, but it is <strong>fully compatible</strong> with all the icons.</p></blockquote>
+<p>Then select this font in your terminal application's preferences:</p><ul><li><strong>Terminal.app</strong>: Preferences → Profiles → Font → choose <strong>MesloLGS Nerd Font</strong></li><li><strong>iTerm2</strong>: Preferences → Profiles → Text → Font → choose <strong>MesloLGS Nerd Font</strong></li></ul>
+<span class="heading-anchor" id="section-4"></span><h2>Step 4: Install zsh-autosuggestions</h2><pre><code>git clone https://github.com/zsh-users/zsh-autosuggestions \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions</code></pre><span class="heading-anchor" id="section-5"></span><h2>Step 5: Install zsh-completions</h2><pre><code>git clone https://github.com/zsh-users/zsh-completions \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-completions</code></pre>
+<blockquote><p>⚠️ <strong>Important:</strong> After enabling zsh-completions as an OMZ plugin for the first time, you must force a rebuild of the completion cache before it takes effect. Step 8 includes this operation.</p></blockquote>
+<span class="heading-anchor" id="section-6"></span><h2>Step 6: Install zsh-syntax-highlighting</h2><p>Install it through Homebrew, rather than in the Oh My Zsh plugin directory:</p><pre><code>brew install zsh-syntax-highlighting</code></pre>
+<span class="heading-anchor" id="section-7"></span><h2>Step 7: Configure ~/.zshrc</h2><p><strong>Replace</strong> the entire <code>~/.zshrc</code> with the following, or use the comments to merge each section into your existing file:</p><pre><code># ── Powerlevel10k 即时提示（必须放最顶部）──────────────────────────
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ── 自定义补全目录加入 fpath（必须在 source oh-my-zsh.sh 之前）─────
+# 不要在这里手动调 compinit，OMZ 会自己调一次，避免重复
+fpath=("$HOME/.oh-my-zsh/custom/completions" $fpath)
+
+# ── Oh My Zsh 基础配置 ─────────────────────────────────────────────
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+plugins=(
+    git
+    zsh-autosuggestions
+    zsh-completions
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# ── 语法高亮（必须放最末尾）───────────────────────────────────────
+# Apple Silicon 下 Homebrew 前缀固定为 /opt/homebrew，写死避免每次启动 fork 一次 brew
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# ── Powerlevel10k 用户配置 ────────────────────────────────────────
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh</code></pre>
+<span class="heading-anchor" id="section-8"></span><h2>Step 8: Rebuild the Completion Cache and Reload</h2><p>When enabling zsh-completions <strong>for the first time, you must</strong> force a rebuild of zcompdump; otherwise, the additional completions will not work:</p><pre><code>rm -f ~/.zcompdump*
+exec zsh</code></pre>
+<p><code>exec zsh</code> replaces the current shell with a fresh zsh process. This is more thorough than <code>source ~/.zshrc</code> and also lets instant prompt work correctly.</p><p>The first load automatically starts the <strong>p10k configuration wizard</strong>. Follow its prompts:</p><ol><li>Check whether font symbols such as diamonds and locks display correctly → choose Yes or No.</li><li>Choose a prompt style → <strong>Rainbow</strong> or <strong>Lean</strong> is recommended.</li><li>Choose a character set → <strong>Unicode</strong> is recommended.</li><li>Select the items you want displayed, such as time, directory, and Git status.</li></ol><p>The wizard automatically creates <code>~/.p10k.zsh</code>.</p><p>To run the configuration again:</p><pre><code>p10k configure</code></pre>
+<span class="heading-anchor" id="section-9"></span><h2>Step 9: Verify the Result</h2><table><thead><tr><th>Feature</th><th>How to check</th></tr></thead><tbody><tr><td>Theme</td><td>The prompt should display colored icons and the Git branch.</td></tr><tr><td>History suggestions</td><td>Type <code>ls</code>. A gray suggestion should appear to the right; press <code>→</code> to accept it.</td></tr><tr><td>Syntax highlighting</td><td>Known commands should appear green and unknown commands red.</td></tr><tr><td>Tab completion</td><td>Type <code>git che</code> and press <code>Tab</code> to see completion candidates.</td></tr><tr><td>Extended completions</td><td>Type <code>docker comp</code> and press <code>Tab</code>. It should complete to <code>compose</code>, provided by zsh-completions.</td></tr></tbody></table>
+<hr><p>Originally published on the Preface Lab WeChat account: <a href="https://mp.weixin.qq.com/s/2x39xjW388E3h6D13H79jQ">Read the original article</a>.</p></article><aside class="toc"><h2>On this page</h2><ol><li><a href="#section-0">Prerequisites</a></li><li><a href="#section-1">Step 1: Install Oh My Zsh</a></li><li><a href="#section-2">Step 2: Install the Powerlevel10k Theme</a></li><li><a href="#section-3">Step 3: Install a Nerd Font</a></li><li><a href="#section-4">Step 4: Install zsh-autosuggestions</a></li><li><a href="#section-5">Step 5: Install zsh-completions</a></li><li><a href="#section-6">Step 6: Install zsh-syntax-highlighting</a></li><li><a href="#section-7">Step 7: Configure ~/.zshrc</a></li><li><a href="#section-8">Step 8: Rebuild the Completion Cache and Reload</a></li><li><a href="#section-9">Step 9: Verify the Result</a></li></ol><a class="back-top" href="#main">Back to top ↑</a></aside></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

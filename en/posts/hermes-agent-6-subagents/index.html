@@ -1,0 +1,417 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Agent Tutorial (6): A Deep Dive into Subagents and Parallel Execution · Eva Lab</title><meta name="description" content="A Deep Dive into Hermes Subagents and Parallel Execution Chapter goal: Understand how Hermes uses subagents fo…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/hermes-agent-6-subagents/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/hermes-agent-6-subagents/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/hermes-agent-6-subagents/">
+<meta property="og:title" content="Hermes Agent Tutorial (6): A Deep Dive into Subagents and Parallel Execution"><meta property="og:description" content="A Deep Dive into Hermes Subagents and Parallel Execution Chapter goal: Understand how Hermes uses subagents fo…">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/hermes-agent-6-subagents/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Hermes Agent Tutorial (6): A Deep Dive into Subagents and Parallel Execution", "datePublished": "2026-04-24", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/hermes-agent-6-subagents/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/hermes-agent-6-subagents/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/hermes-agent-6-subagents/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">AI & agents</p><h1>Hermes Agent Tutorial (6): A Deep Dive into Subagents and Parallel Execution</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-24">2026.04.24</time><span>·</span><span>10 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><h1>A Deep Dive into Hermes Subagents and Parallel Execution</h1><blockquote><p>Chapter goal: Understand how Hermes uses subagents for parallel tasks and how delegate_tool is designed<br/>Prerequisites: Hermes Agent Tutorial (2): System Architecture and Design<br/>Documentation: https://github.com/Eva-Dengyh/AI-Fullstack-Notes</p></blockquote><hr/><span class="heading-anchor" id="section-0"></span><h2>Contents</h2><ul><li>1. What problems do subagents solve?</li><li>2. What is a subagent?</li><li>3. The design of delegate_tool</li><li>4. A subagent's lifecycle</li><li>5. Parallel execution: Multiple subagents working together</li><li>6. Tool-call flow: Main agent ↔ Subagent</li><li>7. Resource isolation and safety</li><li>8. Hands-on: Have Hermes research three topics simultaneously</li></ul><hr/><span class="heading-anchor" id="section-1"></span><h2>1. What problems do subagents solve?</h2><span class="heading-anchor" id="section-2"></span><h3>1.1 The single-agent bottleneck</h3><p>A standard AIAgent works on one thread:</p><pre><code>用户：帮我研究 AI Agent 的最新发展
+
+    AI 思考：需要搜索很多资料...
+        │
+        ▼
+    搜索 ①：LangChain 最新动态
+        │
+        ▼ 等待结果
+    分析 ①
+    
+    搜索 ②：AutoGen 最新动态
+        │
+        ▼ 等待结果
+    分析 ②
+    
+    搜索 ③：CrewAI 最新动态
+        │
+        ▼ 等待结果
+    分析 ③
+    
+    综合报告 → 返回用户</code></pre><p><strong>The problem: Search and analysis are sequential, so three topics take three times as long.</strong></p><span class="heading-anchor" id="section-3"></span><h3>1.2 The subagent solution</h3><p>Introduce multiple subagents working simultaneously:</p><pre><code>用户：帮我研究 AI Agent 的最新发展
+
+    主 Agent（你）
+        │
+        ├──▶ 子 Agent A：研究 LangChain
+        │       搜索 ① → 分析 ①
+        │
+        ├──▶ 子 Agent B：研究 AutoGen
+        │       搜索 ② → 分析 ②
+        │
+        └──▶ 子 Agent C：研究 CrewAI
+                搜索 ③ → 分析 ③
+
+    三个子 Agent 同时工作（并行）
+        │
+        ▼
+    主 Agent 收集所有结果 → 综合报告 → 返回用户</code></pre><p><strong>Result: Researching three topics takes 1x rather than 3x the time.</strong></p><hr/><span class="heading-anchor" id="section-4"></span><h2>2. What is a subagent?</h2><span class="heading-anchor" id="section-5"></span><h3>2.1 Definition</h3><p><strong>A subagent is a complete AIAgent instance running in an independent context.</strong></p><pre><code>主 Agent（父）
+    │
+    ├── 共享：主 Agent 的 session_id（用于共享历史）
+    ├── 独立：自己的 AIAgent 实例
+    ├── 独立：自己的 messages[] 历史
+    ├── 独立：自己的 task_id（用于隔离工具状态）
+    └── 独立：自己的 toolsets 配置</code></pre><span class="heading-anchor" id="section-6"></span><h3>2.2 Subagents versus threads</h3><p>People often confuse subagents with multithreading:</p><pre><code>多线程：
+  - 同一个进程里，多个执行流同时跑
+  - 共享内存，有竞态条件风险
+  - 一个崩溃可能影响其他
+
+子 Agent：
+  - 独立的 AIAgent 实例（进程级别隔离）
+  - 完全独立的上下文
+  - 一个崩溃不影响其他
+  - 通信通过消息（JSON 字符串）</code></pre><span class="heading-anchor" id="section-7"></span><h3>2.3 When to use subagents</h3><table><thead><tr><th>Scenario</th><th>Why use a subagent?</th></tr></thead><tbody><tr><td>Research multiple topics at once</td><td>Speed through parallelism</td></tr><tr><td>Handle subtasks in complex work</td><td>Task decomposition and focus</td></tr><tr><td>Run risky operations that might fail</td><td>Protection through isolation</td></tr><tr><td>Tasks requiring different toolsets</td><td>Independent configuration</td></tr></tbody></table><hr/><span class="heading-anchor" id="section-8"></span><h2>3. The design of delegate_tool</h2><span class="heading-anchor" id="section-9"></span><h3>3.1 Tool signature</h3><pre><code># tools/delegate_tool.py
+
+DELEGATE_SCHEMA = {
+    "name": "delegate_task",
+    "description": (
+        "Spawn one or more subagents to work on tasks in isolated contexts. "
+        "Each subagent gets its own conversation, terminal session, and toolset. "
+        "Use for: reasoning-heavy subtasks, parallel independent workstreams, "
+        "or tasks that would flood the main context with intermediate data.\n\n"
+        "IMPORTANT: Subagents have NO memory of your conversation. "
+        "Pass all relevant info (file paths, error messages, constraints) "
+        "via the 'context' field."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "goal": {
+                "type": "string",
+                "description": "What the subagent should accomplish."
+            },
+            "context": {
+                "type": "string",
+                "description": "Background info the subagent needs."
+            },
+            "toolsets": {
+                "type": "array",
+                "items": {"type": "string"},
+                "description": "Toolsets to enable for this subagent."
+            },
+            "tasks": {
+                "type": "array",
+                "description": "Batch mode: tasks to run in parallel (up to 3).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "goal": {...},
+                        "context": {...},
+                        "toolsets": {...},
+                    }
+                }
+            }
+        }
+    }
+}</code></pre><span class="heading-anchor" id="section-10"></span><h3>3.2 Core logic of delegate_tool</h3><pre><code># tools/delegate_tool.py（简化版）
+
+def delegate_task(
+    goal: str = None,
+    context: str = None,
+    toolsets: List[str] = None,
+    tasks: List[dict] = None,
+    # 以下参数由框架注入
+    task_id: str = None,
+    session_id: str = None,
+) -&gt; str:
+    """
+    创建子 Agent 并执行任务。
+    """
+    
+    # ========== 单任务模式 ==========
+    if goal and not tasks:
+        subagent = AIAgent(
+            session_id=f"{session_id}:subagent:{task_id}",
+            enabled_toolsets=toolsets or ["terminal", "file", "web"],
+        )
+        
+        result = subagent.run_conversation(
+            user_message=goal,
+            system_message=f"Context: {context}" if context else None,
+        )
+        
+        return json.dumps({
+            "success": True,
+            "result": result["final_response"],
+        })
+    
+    # ========== 批量并行模式 ==========
+    if tasks:
+        # 并行执行多个子任务
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            futures = []
+            for i, task in enumerate(tasks):
+                future = executor.submit(
+                    run_subagent, task, i, session_id
+                )
+                futures.append(future)
+            
+            # 等待所有完成
+            results = [f.result() for f in futures]
+        
+        return json.dumps({
+            "success": True,
+            "results": results,
+        })</code></pre><span class="heading-anchor" id="section-11"></span><h3>3.3 Batch mode: Parallel tasks</h3><pre><code># 批量模式的实现
+
+async def run_subagent_batch(tasks: List[dict]) -&gt; List[str]:
+    """
+    同时启动多个子 Agent，结果一起返回。
+    这是 Hermes 实现"同时研究 3 个主题"的核心。
+    """
+    
+    async def run_one(task: dict, index: int):
+        subagent = AIAgent(
+            session_id=f"batch:{session_id}:{index}",
+            enabled_toolsets=task.get("toolsets", ["terminal", "file", "web"]),
+        )
+        
+        return await subagent.run_conversation_async(
+            user_message=task["goal"],
+            system_message=f"Background: {task.get('context', '')}",
+        )
+    
+    # asyncio.gather 同时运行所有任务
+    results = await asyncio.gather(
+        *[run_one(t, i) for i, t in enumerate(tasks)]
+    )
+    
+    return results</code></pre><hr/><span class="heading-anchor" id="section-12"></span><h2>4. A subagent's lifecycle</h2><span class="heading-anchor" id="section-13"></span><h3>4.1 Complete lifecycle diagram</h3><pre><code>主 Agent
+    │
+    │ ① delegate_task("帮我研究 X", tasks=[A, B, C])
+    ▼
+子 Agent A  子 Agent B  子 Agent C
+    │          │          │
+    │ ② 创建   │  ③ 创建   │  ④ 创建
+    │ AIAgent │  AIAgent │  AIAgent
+    │ 实例     │  实例     │  实例
+    │          │          │
+    │ ⑤ 运行   │  ⑤ 运行   │  ⑤ 运行
+    │ run_conv │  run_conv │  run_conv
+    │          │          │
+    │ ⑥ 返回   │  ⑥ 返回   │  ⑥ 返回
+    │ 结果     │  结果     │  结果
+    │          │          │
+    └──────────┼──────────┘
+               │
+               ▼
+         ⑦ 主 Agent 收集所有结果
+               │
+               ▼
+         ⑧ 综合成最终回复
+               │
+               ▼
+         ⑨ 返回给用户</code></pre><span class="heading-anchor" id="section-14"></span><h3>4.2 Lifecycle in detail</h3><pre><code>① 创建子 Agent
+   - 主 Agent 调用 delegate_task
+   - 框架创建一个全新的 AIAgent 实例
+   - 每个子 Agent 有自己的 task_id
+
+② 初始化上下文
+   - 子 Agent 加载自己的 system prompt
+   - 如果传入了 context，作为 system message 注入
+   - 子 Agent 不知道主 Agent 聊过什么
+
+③ 运行 run_conversation
+   - 子 Agent 独立执行 AI 循环
+   - 可以调用工具，可以多轮交互
+   - 有自己的 iteration_budget
+
+④ 返回结果
+   - 子 Agent 返回 final_response
+   - 结果以 JSON 字符串形式返回给主 Agent
+   - 主 Agent 把结果注入自己的 messages
+
+⑤ 主 Agent 继续工作
+   - 主 Agent 看到子 Agent 的结果
+   - 综合所有子 Agent 的研究，生成最终报告</code></pre><span class="heading-anchor" id="section-15"></span><h3>4.3 State isolation</h3><p>The subagent and main agent are fully isolated:</p><pre><code># 隔离维度：
+
+# 消息历史（messages[]）
+主 Agent messages ≠ 子 Agent messages
+  → 子 Agent 不会看到主 Agent 的完整对话历史
+
+# 工具状态
+子 Agent 有独立的 task_id
+  → 子 Agent 的文件操作不会污染主 Agent 的工作目录
+
+# 工具集（toolsets）
+子 Agent 可以有不同的工具集
+  → 可以限制子 Agent 只能搜索，不能写文件
+
+# Token 预算
+每个子 Agent 有自己的 iteration_budget
+  → 一个子 Agent 失控不会耗尽主 Agent 的预算</code></pre><hr/><span class="heading-anchor" id="section-16"></span><h2>5. Parallel execution: Multiple subagents working together</h2><span class="heading-anchor" id="section-17"></span><h3>5.1 Why parallelize?</h3><p>Running three subagents sequentially:</p><pre><code>任务 A：10 分钟
+任务 B：10 分钟
+任务 C：10 分钟
+─────────────────
+总耗时：30 分钟</code></pre><p>Running three subagents in parallel:</p><pre><code>子A：10分钟 ──────────────────▶
+子B：10分钟 ──────────────────▶
+子C：10分钟 ──────────────────▶
+─────────────────
+总耗时：10 分钟</code></pre><span class="heading-anchor" id="section-18"></span><h3>5.2 Conditions for parallel execution</h3><p>Parallelism is not universal. It suits the following situations:</p><pre><code>适合并行：
+  ✅ 三个任务相互独立（研究 A、研究 B、研究 C）
+  ✅ 三个任务不需要互相通信
+  ✅ 三个任务使用不同的工具
+
+不适合并行：
+  ❌ 任务 B 需要等任务 A 的结果
+  ❌ 三个任务要访问同一个文件
+  ❌ 三个任务有执行顺序依赖</code></pre><span class="heading-anchor" id="section-19"></span><h3>5.3 Using batch mode</h3><pre><code># 批量并行模式的调用方式
+
+delegate_task(
+    tasks=[
+        {
+            "goal": "深入研究 LangChain 的最新发展",
+            "context": "重点关注：1) 新特性 2) 性能改进 3) 已知问题",
+            "toolsets": ["web", "terminal"],
+        },
+        {
+            "goal": "深入研究 AutoGen 的最新发展",
+            "context": "重点关注：1) 多 Agent 协作 2) 代码生成能力",
+            "toolsets": ["web", "terminal"],
+        },
+        {
+            "goal": "深入研究 CrewAI 的最新发展",
+            "context": "重点关注：1) Agent 角色定义 2) 任务分解能力",
+            "toolsets": ["web", "terminal"],
+        },
+    ]
+)
+# → 三个子 Agent 同时启动
+# → 10 分钟后，三个结果一起返回
+# → 主 Agent 综合成报告</code></pre><span class="heading-anchor" id="section-20"></span><h3>5.4 Technical implementation of parallel execution</h3><pre><code># ThreadPoolExecutor 实现真正的并行
+
+with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    
+    def run_subagent_in_thread(task: dict, index: int):
+        """在新线程里运行子 Agent"""
+        subagent = AIAgent(
+            session_id=f"{session_id}:child:{index}",
+            enabled_toolsets=task.get("toolsets", ["terminal", "file", "web"]),
+        )
+        
+        return subagent.run_conversation(
+            user_message=task["goal"],
+            system_message=task.get("context"),
+        )
+    
+    futures = [
+        executor.submit(run_subagent_in_thread, task, i)
+        for i, task in enumerate(tasks)
+    ]
+    
+    # gather 等待所有线程完成
+    results = [f.result() for f in concurrent.futures.as_completed(futures)]</code></pre><hr/><span class="heading-anchor" id="section-21"></span><h2>6. Tool-call flow: Main agent ↔ Subagent</h2><span class="heading-anchor" id="section-22"></span><h3>6.1 Can subagents call tools?</h3><p><strong>Yes.</strong> A subagent is a full AIAgent with its own toolset.</p><pre><code>子 Agent A
+    │
+    │ user_message: "搜索 LangChain 最新动态"
+    ▼
+AI 思考："需要调用 web_search 工具"
+    │
+    ▼
+web_search(query="LangChain latest news 2025")
+    │
+    ▼
+返回搜索结果</code></pre><span class="heading-anchor" id="section-23"></span><h3>6.2 Subagent tool restrictions</h3><p>The main agent can restrict which tools a subagent may use:</p><pre><code>delegate_task(
+    goal="帮我分析这个代码库",
+    context="代码库路径：~/project",
+    toolsets=["file", "terminal"],  # 没有 "delegate"！
+                                    # 子 Agent 不能创建更多子 Agent
+)</code></pre><p><strong>This is an intentional safeguard against subagents spawning endlessly and exhausting resources.</strong></p><span class="heading-anchor" id="section-24"></span><h3>6.3 Communication between main agent and subagent</h3><pre><code>主 Agent                          子 Agent
+    │                                  │
+    │  ① delegate_task(goal, context)  │
+    │ ─────────────────────────────────▶
+    │                                  │
+    │                           ② 构建自己的消息
+    │                           ③ AI 循环（可调用工具）
+    │                                  │
+    │                           ④ 返回最终回复
+    │ ◀─────────────────────────────────
+    │                                  │
+    │  ⑤ 主 Agent 把子 Agent 的回复   │
+    │     注入自己的 messages[]        │
+    │                                  │
+    ▼  ⑥ 主 Agent 继续工作            │</code></pre><hr/><span class="heading-anchor" id="section-25"></span><h2>7. Resource isolation and safety</h2><span class="heading-anchor" id="section-26"></span><h3>7.1 Why isolate?</h3><pre><code>场景：
+  子 Agent A 执行了一个有风险的命令：
+  rm -rf /important/project
+  
+  如果没有隔离，这个命令会删除主 Agent 工作目录的文件！
+
+解决方案：
+  每个子 Agent 运行在独立的 task_id 下
+  → 文件操作被限制在 task_id 对应的目录
+  → 危险的 rm -rf 不会影响到主目录</code></pre><span class="heading-anchor" id="section-27"></span><h3>7.2 Process-level isolation</h3><pre><code># 子 Agent 的创建可以指定不同的运行环境
+
+subagent = AIAgent(
+    session_id=f"{session_id}:child:{index}",
+    
+    # 指定运行环境
+    backend="docker",           # 在 Docker 容器里运行
+    docker_image="hermes/agent", # 使用隔离的 Docker 镜像
+    # 不指定则默认在本地运行
+    
+    enabled_toolsets=["terminal", "file", "web"],
+)</code></pre><span class="heading-anchor" id="section-28"></span><h3>7.3 Tool-level safety</h3><pre><code># 子 Agent 不能调用的工具（在注册时标记）
+
+AGENT_LOOP_TOOLS = {
+    "delegate_task",     # 子 Agent 不能创建更多子 Agent
+    "memory_manage",    # 子 Agent 不能修改主人记忆
+    "skill_manage",     # 子 Agent 不能修改 Skills
+    "cronjob_manage",   # 子 Agent 不能创建定时任务
+}
+
+# 在 handle_function_call 中拦截
+if function_name in _AGENT_LOOP_TOOLS:
+    return json.dumps({
+        "error": f"{function_name} must be handled by the agent loop"
+    })</code></pre><hr/><span class="heading-anchor" id="section-29"></span><h2>8. Hands-on: Have Hermes research three topics simultaneously</h2><span class="heading-anchor" id="section-30"></span><h3>8.1 User scenario</h3><pre><code>用户："帮我同时研究这三个主题：
+      1. 2025年 AI Agent 的最新发展趋势
+      2. 最新发布的开源 LLM 模型
+      3. Rust 语言在 AI 领域的应用"
+
+预期：
+  → 三个子 Agent 同时开始研究
+  → 10 分钟后得到三份独立报告
+  → 主 Agent 综合成一份完整报告</code></pre><span class="heading-anchor" id="section-31"></span><h3>8.2 Complete conversation flow</h3><pre><code>用户
+  │
+  ▼
+主 Agent 思考："这是三个独立的研究任务，
+              我应该并行执行以节省时间"
+  │
+  ▼
+delegate_task(tasks=[...])
+  │
+  ├──▶ 子 Agent A：研究 AI Agent 趋势
+  │       │
+  │       ▼ web_search("AI Agent trends 2025")
+  │       ▼ 分析搜索结果
+  │       ▼ 生成报告
+  │       ▼ 返回："AI Agent 2025 趋势报告..."
+  │
+  ├──▶ 子 Agent B：研究开源 LLM
+  │       │
+  │       ▼ web_search("latest open source LLM 2025")
+  │       ▼ 分析搜索结果
+  │       ▼ 生成报告
+  │       ▼ 返回："最新开源 LLM 报告..."
+  │
+  └──▶ 子 Agent C：研究 Rust + AI
+          │
+          ▼ web_search("Rust AI applications 2025")
+          ▼ 分析搜索结果
+          ▼ 生成报告
+          ▼ 返回："Rust AI 应用报告..."
+
+  （三个子 Agent 同时运行）
+  │
+  ▼
+主 Agent 收到三个报告
+  │
+  ▼
+综合成最终报告，返回给用户</code></pre><span class="heading-anchor" id="section-32"></span><h3>8.3 Comparing actual results</h3><table><thead><tr><th>Approach</th><th>Time</th><th>Experience</th></tr></thead><tbody><tr><td>One agent, sequential</td><td>30 minutes (3 × 10)</td><td>Long wait</td></tr><tr><td>Three subagents, parallel</td><td>10 minutes</td><td>All results arrive quickly</td></tr></tbody></table><hr/><span class="heading-anchor" id="section-33"></span><h2>Summary</h2><p>After this chapter, you should understand:</p><ul><li>The single-agent bottleneck: Slow sequential processing</li><li>The definition of a subagent: An independent AIAgent instance</li><li>The fundamental difference between subagents and multithreading</li><li>The design of delegate_tool: Single-task and batch-parallel modes</li><li>The complete subagent lifecycle: Create → Run → Return → Synthesize</li><li>Four dimensions of state isolation: Messages / tools / toolsets / budgets</li><li>Conditions and suitable scenarios for parallel execution</li><li>Resource isolation and safety mechanisms</li><li>Hands-on: Researching several topics simultaneously</li></ul><br/><p></p>
+<hr><p>Originally published on the Preface Lab WeChat account: <a href="https://mp.weixin.qq.com/s/j0ROm5f3cyUJLR0R1mB_Cw">Read the original WeChat article</a>.</p></article><aside class="toc"><h2>On this page</h2><ol><li><a href="#section-0">Contents</a></li><li><a href="#section-1">1. What problems do subagents solve?</a></li><li><a href="#section-2">1.1 The single-agent bottleneck</a></li><li><a href="#section-3">1.2 The subagent solution</a></li><li><a href="#section-4">2. What is a subagent?</a></li><li><a href="#section-5">2.1 Definition</a></li><li><a href="#section-6">2.2 Subagents versus threads</a></li><li><a href="#section-7">2.3 When to use subagents</a></li><li><a href="#section-8">3. The design of delegate_tool</a></li><li><a href="#section-9">3.1 Tool signature</a></li><li><a href="#section-10">3.2 Core logic of delegate_tool</a></li><li><a href="#section-11">3.3 Batch mode: Parallel tasks</a></li><li><a href="#section-12">4. A subagent&#x27;s lifecycle</a></li><li><a href="#section-13">4.1 Complete lifecycle diagram</a></li><li><a href="#section-14">4.2 Lifecycle in detail</a></li><li><a href="#section-15">4.3 State isolation</a></li><li><a href="#section-16">5. Parallel execution: Multiple subagents working together</a></li><li><a href="#section-17">5.1 Why parallelize?</a></li><li><a href="#section-18">5.2 Conditions for parallel execution</a></li><li><a href="#section-19">5.3 Using batch mode</a></li><li><a href="#section-20">5.4 Technical implementation of parallel execution</a></li><li><a href="#section-21">6. Tool-call flow: Main agent ↔ Subagent</a></li><li><a href="#section-22">6.1 Can subagents call tools?</a></li><li><a href="#section-23">6.2 Subagent tool restrictions</a></li><li><a href="#section-24">6.3 Communication between main agent and subagent</a></li><li><a href="#section-25">7. Resource isolation and safety</a></li><li><a href="#section-26">7.1 Why isolate?</a></li><li><a href="#section-27">7.2 Process-level isolation</a></li><li><a href="#section-28">7.3 Tool-level safety</a></li><li><a href="#section-29">8. Hands-on: Have Hermes research three topics simultaneously</a></li><li><a href="#section-30">8.1 User scenario</a></li><li><a href="#section-31">8.2 Complete conversation flow</a></li><li><a href="#section-32">8.3 Comparing actual results</a></li><li><a href="#section-33">Summary</a></li></ol><a class="back-top" href="#main">Back to top ↑</a></aside></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

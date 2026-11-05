@@ -1,0 +1,192 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Publishing Markdown Notes with mdBook and GitHub Pages · Eva Lab</title><meta name="description" content="All articles from this WeChat account are also organized in the GitHub repository https://github.com/Eva-Dengy…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/mdbook-github-pages/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/mdbook-github-pages/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/mdbook-github-pages/">
+<meta property="og:title" content="Publishing Markdown Notes with mdBook and GitHub Pages"><meta property="og:description" content="All articles from this WeChat account are also organized in the GitHub repository https://github.com/Eva-Dengy…">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/mdbook-github-pages/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Publishing Markdown Notes with mdBook and GitHub Pages", "datePublished": "2026-04-10", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/mdbook-github-pages/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/mdbook-github-pages/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/mdbook-github-pages/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">Developer tools</p><h1>Publishing Markdown Notes with mdBook and GitHub Pages</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-10">2026.04.10</time><span>·</span><span>9 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><blockquote><p>All articles from this WeChat account are also organized in the GitHub repository https://github.com/Eva-Dengyh/AI-Fullstack-Notes. The repository versions include more complete code examples, supplementary explanations, and subsequent updates. If you find them helpful, star ⭐ the repository to bookmark it, and feel free to report errors or discuss ideas through Issues.</p></blockquote><p><strong>Scenario</strong>: You have a collection of Markdown notes and want to organize them into an online “technical book” with navigation and search, automatically published every time you <code>git push</code>. mdBook + GitHub Pages + GitHub Actions can do all this in 30 minutes, completely free.</p><p>This article covers:</p><ul><li>Local installation and initialization</li><li>Directory structure and <code>SUMMARY.md</code> writing rules</li><li><code>book.toml</code> complete configuration guide</li><li>Customizing appearance (theme colors, fonts, favicon)</li><li>Automated deployment with GitHub Actions, <code>.gitignore</code>, and Pages settings</li></ul><span class="heading-anchor" id="section-0"></span><h2>1. Prerequisites</h2><table><thead><tr><th>Tool</th><th>Version requirement</th><th>Description</th></tr></thead><tbody><tr><td>Rust / Cargo</td><td>Any stable release</td><td>Used to install mdBook through <code>cargo install</code> </td></tr><tr><td>Git</td><td>≥ 2.x</td><td>Version control and pushing</td></tr><tr><td>GitHub account</td><td>—</td><td>Repository hosting + Pages deployment</td></tr></tbody></table><p>If you do not want to install Rust, download a precompiled binary from GitHub Releases and put it on your <code>PATH</code>.</p><span class="heading-anchor" id="section-1"></span><h2>2. Install mdBook</h2><span class="heading-anchor" id="section-2"></span><h3>Option A: Install through Cargo (Recommended)</h3><pre><code>cargo install mdbook</code></pre><p>Verify after installation:</p><pre><code>mdbook --version
+# 常见为 v0.5.x（与 CI 里 mdbook-version: "latest" 一致）
+# 若需与旧版插件兼容，可固定为 0.4.x，例如：cargo install mdbook --locked --version 0.4.52</code></pre><span class="heading-anchor" id="section-3"></span><h3>Option B: Download a Binary (No Rust Required)</h3><pre><code># macOS (Apple Silicon)
+curl -L https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-aarch64-apple-darwin.tar.gz \
+  | tar xz -C /usr/local/bin
+
+# Linux x86_64
+curl -L https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-x86_64-unknown-linux-gnu.tar.gz \
+  | tar xz -C /usr/local/bin</code></pre><span class="heading-anchor" id="section-4"></span><h2>3. Initialize the Project</h2><span class="heading-anchor" id="section-5"></span><h3>3.1 New Project</h3><pre><code>mdbook init my-notes
+cd my-notes</code></pre><p><code>init</code> generates this structure:</p><pre><code>my-notes/
+├── book.toml        # 核心配置文件
+└── src/
+    ├── SUMMARY.md   # 目录（mdBook 的"地图"）
+    └── chapter_1.md</code></pre><span class="heading-anchor" id="section-6"></span><h3>3.2 Use an Existing Markdown Repository</h3><p>If you already have a Git repository containing <code>.md</code> files, run this directly at its root:</p><pre><code>mdbook init --force .</code></pre><p>Then manually adjust the <code>book.toml</code> file's <code>src</code> path (explained in the next section).</p><p><strong>Note</strong>: <code>mdbook build</code> defaults to the output directory <strong><code>book/</code></strong> at the repository root. Add the root-level <strong><code>.gitignore</code></strong> entry for <code>book/</code> early (see Section 9). Do <strong>not</strong> commit <code>book/</code> as a submodule; otherwise, it will have no URL in <code>.gitmodules</code> and CI will fail when <code>actions/checkout</code> tries to fetch submodules.</p><span class="heading-anchor" id="section-7"></span><h2>4. Complete book.toml Configuration Guide</h2><p><code>book.toml</code> is mdBook's main configuration file, in TOML format. Below is a complete, production-ready configuration with line-by-line comments:</p><pre><code># ── 书籍基本信息 ──────────────────────────────────────────
+[book]
+title       = "AI-Fullstack-Notes"          # 显示在左上角的书名
+description = "全栈工程师的 AI/Agent 学习笔记"
+authors     = ["Eva"]
+language    = "zh"                           # 界面语言（影响搜索分词）
+src         = "."                            # Markdown 源文件根目录
+                                             # 默认 "src"；改成 "." 表示仓库根目录即源目录
+
+# ── HTML 输出配置 ─────────────────────────────────────────
+[output.html]
+site-url = "/AI-Fullstack-Notes/"           # GitHub Pages 子路径，必须与仓库名一致
+                                             # 本地预览时注释掉此行，否则资源路径会错
+
+git-repository-url  = "https://github.com/Eva-Dengyh/AI-Fullstack-Notes"
+# mdBook 0.5+：品牌图标 fa-github 等会触发构建错误 Missing font github，请省略 git-repository-icon。
+# git-repository-icon = "fa-github"
+
+# 每个页面底部显示"在 GitHub 上编辑此页"链接
+edit-url-template = "https://github.com/Eva-Dengyh/AI-Fullstack-Notes/edit/main/{path}"
+
+# 其他常用可选项（按需启用）：
+# theme            = "coal"                 # 默认主题：light/rust/coal/navy/ayu
+# default-theme    = "light"               # 读者首次打开时的主题
+# preferred-dark-theme = "navy"            # 系统暗色模式时使用的主题
+# mathjax-support  = true                  # 启用 LaTeX 数学公式
+# no-section-label = true                  # 目录标题前不显示章节编号
+# additional-css   = ["theme/custom.css"]  # 自定义 CSS
+# additional-js    = ["theme/custom.js"]   # 自定义 JS
+# search.enable    = true                  # 默认开启全文搜索</code></pre><blockquote><p><strong>A key pitfall</strong>: <code>site-url</code> must exactly match your GitHub repository name, including capitalization; otherwise, image and CSS paths will all return 404 after deployment.</p></blockquote><span class="heading-anchor" id="section-8"></span><h2>5. Rules for Writing SUMMARY.md</h2><p><code>SUMMARY.md</code> is the only entry point through which mdBook reads the table of contents. <strong>File paths are relative to the <code>src</code> directory</strong> (the directory specified by <code>book.toml</code>'s <code>src</code> setting).</p><span class="heading-anchor" id="section-9"></span><h3>5.1 Basic Syntax</h3><pre><code># 目录
+
+&lt;!-- 前言：不计入章节编号，显示在最顶部 --&gt;
+[前言](README.md)
+
+---
+
+# 一级分组标题（纯文本，不可点击）
+
+- [章节标题](path/to/file.md)
+  - [子章节](path/to/sub.md)
+    - [孙章节](path/to/subsub.md)
+
+# 另一个分组
+
+- [另一章](another.md)
+
+---
+
+&lt;!-- 后记：不计入章节编号 --&gt;
+[附录](appendix.md)</code></pre><span class="heading-anchor" id="section-10"></span><h3>5.2 Practical Example (This Project's SUMMARY.md Structure)</h3><pre><code># 目录
+
+[前言](README.md)
+
+---
+
+# AI / Agent
+
+- [LangChain 架构浅析](ai/langchain-architecture.md)
+- [LangGraph — 通过图结构重新定义 LLM 应用](ai/langgraph-intro.md)
+- [RAG 实战：从手写 MVP 到生产级优化](ai/rag-mvp-to-production.md)
+
+# 架构 / 后端
+
+- [高并发架构设计思考](backend/high-concurrency-architecture.md)
+- [Nginx 全解析：反向代理与负载均衡](backend/nginx-reverse-proxy-load-balance.md)
+
+# 基础设施 / 运维
+
+- [Docker 基础与 Dockerfile 编写](infra/docker-basics-dockerfile.md)
+- [5 分钟用 Docker 自建 Supabase](infra/supabase-docker-self-host.md)</code></pre><span class="heading-anchor" id="section-11"></span><h3>5.3 Quick Reference</h3><table><thead><tr><th>Rule</th><th>Description</th></tr></thead><tbody><tr><td><code>[标题](路径)</code></td><td>Only files listed here appear in the book</td></tr><tr><td><code>---</code></td><td>Horizontal separator, for visual separation only</td></tr><tr><td><code># 标题</code></td><td>Group heading; not clickable and generates no page</td></tr><tr><td>Indentation (2 or 4 spaces)</td><td>Indicates subchapters; nesting is unlimited</td></tr><tr><td>File paths</td><td>Relative to the <code>src</code> directory; unlisted <code>.md</code> files are not compiled</td></tr></tbody></table><span class="heading-anchor" id="section-12"></span><h2>6. Local Preview</h2><pre><code># 启动本地开发服务器，文件变动自动刷新
+mdbook serve --open
+
+# 仅构建，不启动服务器
+mdbook build
+# 输出目录：./book/</code></pre><blockquote><p>For local previews, if <code>book.toml</code> sets <code>site-url = "/AI-Fullstack-Notes/"</code>, visiting <code>http://localhost:3000</code> shows a blank page. Temporarily comment out that line, or access it through <code>http://localhost:3000/AI-Fullstack-Notes/</code>.</p></blockquote><span class="heading-anchor" id="section-13"></span><h2>7. Customize the Appearance (Optional)</h2><span class="heading-anchor" id="section-14"></span><h3>7.1 Override Theme Variables</h3><p>Create a <code>theme/</code> folder at the project root and add <code>custom.css</code>: </p><pre><code>/* theme/custom.css */
+:root {
+  --sidebar-bg: #1a1a2e;        /* 侧边栏背景色 */
+  --sidebar-fg: #e0e0e0;        /* 侧边栏文字色 */
+  --links: #4fc3f7;             /* 链接颜色 */
+}</code></pre><p>Reference it in <code>book.toml</code>:</p><pre><code>[output.html]
+additional-css = ["theme/custom.css"]</code></pre><span class="heading-anchor" id="section-15"></span><h3>7.2 Add a Favicon</h3><pre><code>mkdir -p theme
+cp your-favicon.png theme/favicon.png
+# 或 .ico 格式
+cp your-favicon.ico theme/favicon.ico</code></pre><p>mdBook automatically recognizes <code>theme/favicon.png</code> or <code>theme/favicon.ico</code>; no extra configuration is needed.</p><span class="heading-anchor" id="section-16"></span><h3>7.3 Enable MathJax (Mathematical Formulas)</h3><pre><code>[output.html]
+mathjax-support = true</code></pre><p>Usage:</p><pre><code>行内公式：$E = mc^2$
+
+块级公式：
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$</code></pre><span class="heading-anchor" id="section-17"></span><h2>8. Automated Deployment with GitHub Actions</h2><span class="heading-anchor" id="section-18"></span><h3>8.1 Directory Structure</h3><pre><code>your-repo/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml   ← 新建此文件
+├── book.toml
+├── SUMMARY.md
+├── .gitignore           ← 建议：忽略 book/（见第九节）
+└── ...（你的 .md 文件）</code></pre><span class="heading-anchor" id="section-19"></span><h3>8.2 Complete deploy.yml</h3><pre><code>name: Deploy mdBook to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main          # 只有推送到 main 分支才触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 必须：允许 Actions 向仓库写入（gh-pages 分支）
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false   # 若误把 book/ 登记成 submodule 且无 .gitmodules，拉子模块会失败；显式关闭更稳妥
+
+      - name: Install mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: "latest"   # 可固定版本号，如 "0.4.52"（需与本地/插件兼容时再考虑）
+
+      - name: Build
+        run: mdbook build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book        # 只发布构建产物，勿把整个仓库推到 gh-pages
+          # force_orphan: true      # 可选：每次用单提交覆盖 gh-pages，清掉历史上误提交的源码/混杂文件</code></pre><span class="heading-anchor" id="section-20"></span><h3>8.3 GitHub Repository Settings</h3><ol><li>1. Open the repository → <strong>Settings</strong> → <strong>Pages</strong></li><li>2. For Source, select <strong>Deploy from a branch</strong></li><li>3. For Branch, select <code>gh-pages</code>, and for the directory select <code>/ (root)</code></li><li>4. Click <strong>Save</strong></li></ol><blockquote><p><strong>Choose the correct Pages source:</strong></p><ul><li><strong>Do not use </strong><code>main</code> + <strong><code>/docs</code></strong>: it runs <strong>Jekyll</strong> (logs often show <code>jekyll-build-pages</code>, <code>Source: .../docs</code>). Without a Jekyll project, it reports that the <strong><code>/docs</code> directory does not exist</strong>.</li><li><strong>Do not use </strong><code>main</code> + <strong><code>/ (root)</code></strong>: GitHub still processes the repository with Jekyll, and the homepage is often <strong><code>README.md</code></strong>, which looks like a “single-page document”, <strong>not the mdBook book interface</strong>. Online reading must use the static files on <strong><code>gh-pages</code></strong>.</li><li><strong>Correct: </strong><strong><code>gh-pages</code> + <code>/ (root)</code></strong> (the previous section's <code>deploy.yml</code> pushes <strong><code>./book/</code></strong> to <code>gh-pages</code>).</li></ul></blockquote><p>After the first <code>git push main</code>, wait for Actions to finish (about 1–2 minutes), then visit:</p><pre><code>https://&lt;你的用户名&gt;.github.io/&lt;仓库名&gt;/</code></pre><span class="heading-anchor" id="section-21"></span><h3>8.4 Workflow Explanation</h3><pre><code>git push main
+     │
+     ▼
+GitHub Actions 触发
+     │
+     ├─ actions/checkout@v4        # 拉取代码（submodules: false）
+     ├─ peaceiris/actions-mdbook@v2 # 安装 mdBook 二进制
+     ├─ mdbook build               # 编译 → ./book/
+     └─ peaceiris/actions-gh-pages@v4
+           └─ 将 ./book/ 推送到 gh-pages 分支
+                    │
+                    ▼
+           GitHub Pages 自动部署</code></pre><span class="heading-anchor" id="section-22"></span><h2>9. .gitignore Configuration</h2><p>The build output directory <strong><code>book/</code></strong> should be ignored to avoid:</p><ul><li>Committing large numbers of generated files to <code>main</code>; </li><li>Accidentally registering <strong><code>book/</code> as a Git submodule</strong> (if the index contains mode <code>160000</code> with no <code>.gitmodules</code>, CI reports <strong><code>No url found for submodule path 'book'</code></strong>).</li></ul><pre><code># mdBook 构建输出（勿提交；勿误登记为 submodule）
+book/</code></pre><span class="heading-anchor" id="section-23"></span><h2>10. Final Project Structure Reference</h2><pre><code>AI-Fullstack-Notes/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml        # CI/CD 自动部署
+├── ai/
+│   ├── langchain-architecture.md
+│   └── rag-mvp-to-production.md
+├── backend/
+│   └── high-concurrency-architecture.md
+├── infra/
+│   └── docker-basics-dockerfile.md
+├── projects/
+│   └── fastsam-demo-v1.md
+├── theme/
+│   ├── custom.css            # 可选：自定义样式
+│   └── favicon.png           # 可选：网站图标
+├── book.toml                 # 核心配置
+├── SUMMARY.md                # 目录结构
+├── README.md                 # 前言/首页
+└── .gitignore                # 排除 book/</code></pre><span class="heading-anchor" id="section-24"></span><h2>Summary</h2><p>After this process, you have a technical knowledge base with <strong>automated publishing</strong>, <strong>full-text search</strong>, <strong>dark mode support</strong>, <strong>free hosting</strong>. From then on, edit Markdown on <strong><code>main</code></strong> and <code>git push</code>; Actions runs <strong><code>mdbook build</code></strong> again and updates <strong><code>gh-pages</code></strong>. Readers must access the <strong><code>gh-pages</code> root directory</strong> configured in Pages to reach the mdBook site.</p><br/><p></p>
+<hr/><p>Originally published on the Preface Lab WeChat account: <a href="https://mp.weixin.qq.com/s/4lyJNhZRhkQso1nTLwSjYA">Read the original WeChat article</a>.</p></article><aside class="toc"><h2>On this page</h2><ol><li><a href="#section-0">1. Prerequisites</a></li><li><a href="#section-1">2. Install mdBook</a></li><li><a href="#section-2">Option A: Install through Cargo (Recommended)</a></li><li><a href="#section-3">Option B: Download a Binary (No Rust Required)</a></li><li><a href="#section-4">3. Initialize the Project</a></li><li><a href="#section-5">3.1 New Project</a></li><li><a href="#section-6">3.2 Use an Existing Markdown Repository</a></li><li><a href="#section-7">4. Complete book.toml Configuration Guide</a></li><li><a href="#section-8">5. Rules for Writing SUMMARY.md</a></li><li><a href="#section-9">5.1 Basic Syntax</a></li><li><a href="#section-10">5.2 Practical Example (This Project&#x27;s SUMMARY.md Structure)</a></li><li><a href="#section-11">5.3 Quick Reference</a></li><li><a href="#section-12">6. Local Preview</a></li><li><a href="#section-13">7. Customize the Appearance (Optional)</a></li><li><a href="#section-14">7.1 Override Theme Variables</a></li><li><a href="#section-15">7.2 Add a Favicon</a></li><li><a href="#section-16">7.3 Enable MathJax (Mathematical Formulas)</a></li><li><a href="#section-17">8. Automated Deployment with GitHub Actions</a></li><li><a href="#section-18">8.1 Directory Structure</a></li><li><a href="#section-19">8.2 Complete deploy.yml</a></li><li><a href="#section-20">8.3 GitHub Repository Settings</a></li><li><a href="#section-21">8.4 Workflow Explanation</a></li><li><a href="#section-22">9. .gitignore Configuration</a></li><li><a href="#section-23">10. Final Project Structure Reference</a></li><li><a href="#section-24">Summary</a></li></ol><a class="back-top" href="#main">Back to top ↑</a></aside></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

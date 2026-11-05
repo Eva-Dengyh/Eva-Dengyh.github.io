@@ -1,0 +1,638 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Agent Tutorial (3): A Deep Dive into the Tool System · Eva Lab</title><meta name="description" content="A Deep Dive into the Hermes Tool System Chapter goal: Understand the details of Hermes&#x27; tool-system design and…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/hermes-agent-3-tool-system/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/hermes-agent-3-tool-system/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/hermes-agent-3-tool-system/">
+<meta property="og:title" content="Hermes Agent Tutorial (3): A Deep Dive into the Tool System"><meta property="og:description" content="A Deep Dive into the Hermes Tool System Chapter goal: Understand the details of Hermes&#x27; tool-system design and…">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/hermes-agent-3-tool-system/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Hermes Agent Tutorial (3): A Deep Dive into the Tool System", "datePublished": "2026-04-17", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/hermes-agent-3-tool-system/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/hermes-agent-3-tool-system/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/hermes-agent-3-tool-system/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">AI & agents</p><h1>Hermes Agent Tutorial (3): A Deep Dive into the Tool System</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-17">2026.04.17</time><span>·</span><span>18 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><h1>A Deep Dive into the Hermes Tool System</h1><blockquote><p>Chapter goal: Understand the details of Hermes' tool-system design and add a new tool yourself<br/>Prerequisites: The previous chapter, “System Architecture”<br/>Documentation: https://github.com/Eva-Dengyh/AI-Fullstack-Notes</p></blockquote><hr/><span class="heading-anchor" id="section-0"></span><h2>Contents</h2><ul><li>1. Where the tool system fits in the architecture</li><li>2. The registry pattern in detail</li><li>3. Schema: An instruction manual for the AI model</li><li>4. Handler: The Python function that does the work</li><li>5. Discovery: How tools are found</li><li>6. Tracing the complete invocation path</li><li>7. Toolsets: Managing tools in groups</li><li>8. Hands-on: Adding a weather-query tool to Hermes</li></ul><hr/><span class="heading-anchor" id="section-1"></span><h2>1. Where the tool system fits in the architecture</h2><p>Recall the previous chapter's overall architecture. The tool system is at the bottom:</p><pre><code>┌─────────────────────────────────────────────────┐
+│              Hermes Gateway                      │
+│              (消息进 / 消息出)                    │
+└─────────────────────┬───────────────────────────┘
+                      │
+┌─────────────────────┴───────────────────────────┐
+│              run_agent.py                        │
+│         AI 循环：问模型 → 执行工具 → 问模型       │
+└─────────────────────┬───────────────────────────┘
+                      │ 工具调用
+┌─────────────────────┴───────────────────────────┐
+│           tools/registry.py                     │
+│         （工具注册中心）                          │
+│         tools/file_tools.py                     │
+│         tools/terminal_tool.py                  │
+│         tools/web_tools.py                      │
+│         tools/delegate_tool.py                  │
+│         ...（60+ 工具）                          │
+└─────────────────────────────────────────────────┘</code></pre><p><strong>In one sentence: the tool system is Hermes' hands—all interactions with the outside world, including reading files, searching the web, and executing commands, happen through tools.</strong></p><hr/><span class="heading-anchor" id="section-2"></span><h2>2. The registry pattern in detail</h2><span class="heading-anchor" id="section-3"></span><h3>2.1 What is the registry pattern?</h3><p><strong>An everyday analogy:</strong> It resembles a company's <strong>front-desk register</strong>. Each new employee fills in their own entry: “My name is XX, my desk is YY, and I can do ZZ.” Visitors consult the register to find someone without knowing where they live or what they like.</p><p><strong>The code analogy:</strong></p><pre><code># 传统方式（耦合）：
+class FileTools:
+    def read_file(self, path): ...
+    def write_file(self, path, content): ...
+
+class TerminalTools:
+    def run_command(self, cmd): ...
+
+# 每加一个工具 → 改一次类的定义 → 核心代码越来越臃肿
+
+# 注册表方式（解耦）：
+registry = ToolRegistry()
+
+def read_file_handler(args): 
+    return read_file(args["path"])
+
+registry.register(
+    name="read_file",
+    schema={...},      # 给 AI 看的说明
+    handler=read_file_handler  # 真正做事的函数
+)
+
+# 新增工具？完全不需要动 registry.py
+# 只需要在工具文件里加一行 registry.register(...)</code></pre><span class="heading-anchor" id="section-4"></span><h3>2.2 ToolRegistry's data structure</h3><pre><code>class ToolRegistry:
+    def __init__(self):
+        self._tools: Dict[str, ToolEntry] = {}
+        # 注册表本体：名字 → 工具条目
+
+    def register(self, name, schema, handler, ...):
+        entry = ToolEntry(name, schema, handler, ...)
+        self._tools[name] = entry  # 注册动作
+
+    def get(self, name) -&gt; ToolEntry:
+        return self._tools.get(name)  # 查询动作
+
+    def dispatch(self, name, args) -&gt; str:
+        entry = self.get(name)
+        return entry.handler(args)  # 执行动作</code></pre><span class="heading-anchor" id="section-5"></span><h3>2.3 Why not class inheritance?</h3><p>With traditional object-oriented design, tools would form an inheritance tree like this:</p><pre><code>Tool
+├── FileTool
+│   ├── ReadFileTool
+│   ├── WriteFileTool
+│   └── SearchFilesTool
+├── TerminalTool
+│   ├── RunCommandTool
+│   └── BackgroundProcessTool
+└── WebTool
+    ├── SearchTool
+    └── BrowserTool</code></pre><p><strong>Problems:</strong></p><ul><li>Python does not support multiple inheritance, but tools often need several capabilities simultaneously, such as both reading/writing files and executing commands</li><li>Adding a tool requires changing the class hierarchy</li><li>Testing is complex because every subclass must be instantiated</li></ul><p><strong>Advantages of the registry pattern:</strong></p><ul><li>Tools are independent, without a hierarchy</li><li>A new tool requires only a new file and one registration line</li><li>Tests can target individual tools without constructing an inheritance tree</li></ul><hr/><span class="heading-anchor" id="section-6"></span><h2>3. Schema: An instruction manual for the AI model</h2><span class="heading-anchor" id="section-7"></span><h3>3.1 What is a schema?</h3><p>A schema is a JSON object describing:</p><pre><code>工具叫什么名字
+接受哪些参数（名字、类型、含义）
+工具是做什么的
+返回什么格式</code></pre><p><strong>It is a tool manual for the AI model, rather than for humans.</strong></p><span class="heading-anchor" id="section-8"></span><h3>3.2 Schema structure</h3><p>Take the <code>read_file</code> tool as an example:</p><pre><code>{
+  "name": "read_file",
+  "description": "Read a text file with pagination and line numbers.\n\n"
+                "Use this instead of cat/head/tail in terminal.\n\n"
+                "Output format: 'LINE_NUM|CONTENT'.\n\n"
+                "Args:\n"
+                "  path (str): Path to the file (absolute, relative, or ~/path)\n"
+                "  offset (int): Line number to start reading from (1-indexed)\n"
+                "  limit (int): Maximum lines to read (default 500, max 2000)\n\n"
+                "Returns:\n"
+                "  dict with 'content', 'total_lines', 'is_binary', 'is_image'",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Path to the file to read (absolute, relative, or ~/path)"
+      },
+      "offset": {
+        "type": "integer",
+        "description": "Line number to start reading from (1-indexed, default: 1)",
+        "default": 1
+      },
+      "limit": {
+        "type": "integer", 
+        "description": "Maximum number of lines to read (default: 500, max: 2000)",
+        "default": 500
+      }
+    },
+    "required": ["path"]
+  }
+}</code></pre><span class="heading-anchor" id="section-9"></span><h3>3.3 How does the AI model use a schema?</h3><pre><code>AI 模型看到 Schema 后：
+
+"好的，我有一个叫 read_file 的工具。
+ 它接受一个叫 path 的字符串参数（必填），
+ 还有 offset 和 limit 两个可选整数参数。
+ 当用户让我'看看某个文件内容'时，我就知道要调用它。"
+
+这是 LLM 的 function calling 能力——模型根据对话上下文，
+自动决定调用哪个工具、传什么参数。</code></pre><span class="heading-anchor" id="section-10"></span><h3>3.4 Best practices for writing schemas</h3><p><strong>A good schema:</strong></p><ul><li>Describes parameters clearly, including when each should be used</li><li>States default values when present</li><li>Uses descriptions to explain <strong>usage scenarios</strong>, beyond parameter meanings</li></ul><p><strong>A poor schema:</strong></p><pre><code>{
+  "name": "weather",
+  "description": "Get weather",
+  "parameters": {
+    "properties": {"city": {"type": "string"}}
+  }
+}</code></pre><p><strong>A good schema:</strong></p><pre><code>{
+  "name": "weather",
+  "description": "Get current weather and forecast for a city.\n\n"
+                "Use when: user asks about weather, temperature, rain, etc.\n\n"
+                "Returns: temperature, conditions, humidity, forecast.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "city": {
+        "type": "string",
+        "description": "City name (e.g. 'Beijing', 'Tokyo')"
+      },
+      "forecast_days": {
+        "type": "integer", 
+        "description": "Number of days to forecast (1-7, default: 3)",
+        "default": 3
+      }
+    },
+    "required": ["city"]
+  }
+}</code></pre><hr/><span class="heading-anchor" id="section-11"></span><h2>4. Handler: The Python function that does the work</h2><span class="heading-anchor" id="section-12"></span><h3>4.1 A handler's responsibilities</h3><p>A handler is a plain Python function responsible for:</p><ol><li>1. Receiving arguments as a dictionary</li><li>2. Performing the actual operation</li><li>3. Returning a JSON string (<strong>all tools must return JSON strings</strong>)</li></ol><span class="heading-anchor" id="section-13"></span><h3>4.2 Standard handler signature</h3><pre><code>def my_handler(args: dict, **kwargs) -&gt; str:
+    """
+    Args:
+        args: 工具调用时传递的参数（字典）
+        **kwargs: 额外上下文
+            task_id: str      # 终端/浏览器会话隔离 ID
+            session_id: str   # 会话 ID
+            tool_call_id: str # 工具调用 ID（用于 trace）
+    
+    Returns:
+        str: JSON 字符串（必须能 json.loads）
+    """
+    # 解析参数
+    param1 = args.get("param1", "default")
+    param2 = args.get("param2", 0)
+    
+    try:
+        # 做实际的事
+        result = do_something(param1, param2)
+        
+        # 返回 JSON 字符串
+        return json.dumps({"success": True, "result": result})
+    
+    except Exception as e:
+        # 错误也要返回 JSON 字符串
+        return json.dumps({"error": f"Failed: {str(e)}"})</code></pre><span class="heading-anchor" id="section-14"></span><h3>4.3 Why return a JSON string?</h3><p>Because this return value is eventually <strong>inserted into the AI model's conversation history</strong>:</p><pre><code># AI 模型看到工具执行结果后，继续思考下一步
+
+messages = [
+    {"role": "user", "content": "帮我读 test.py"},
+    {"role": "assistant", "tool_calls": [{"name": "read_file", "args": {"path": "test.py"}}]},
+    {"role": "tool", "content": '{"content": "...file contents...", "total_lines": 50}'},
+    #                                                      ↑
+    #                                           必须是字符串，因为 role: tool 的
+    #                                           content 字段在 API 规范里是字符串
+]</code></pre><span class="heading-anchor" id="section-15"></span><h3>4.4 A real handler example</h3><p>Here is the implementation of <code>todo_tool</code> (<code>tools/todo_tool.py</code>):</p><pre><code>class TodoStore:
+    """内存中的任务清单，一个 AIAgent 实例对应一个。"""
+    def __init__(self):
+        self._items: List[Dict[str, str]] = []
+
+    def write(self, todos: List[Dict], merge: bool = False) -&gt; List[Dict]:
+        if not merge:
+            # 全量替换模式
+            self._items = [self._validate(t) for t in self._dedupe(todos)]
+        else:
+            # 合并模式：按 id 更新已有项，追加新项
+            existing = {item["id"]: item for item in self._items}
+            for t in todos:
+                item_id = t.get("id", "").strip()
+                if item_id in existing:
+                    # 更新字段
+                    if "content" in t: existing[item_id]["content"] = t["content"]
+                    if "status" in t: existing[item_id]["status"] = t["status"]
+                else:
+                    # 追加新项
+                    self._items.append(self._validate(t))
+        return self.read()  # 总是返回完整列表
+
+
+def todo_tool(todos=None, merge=False, store=None) -&gt; str:
+    """
+    Args:
+        todos: 任务列表 [{id, content, status}]
+        merge: 是否合并（True=更新已有，False=全量替换）
+        store: TodoStore 实例（从 AIAgent 注入）
+    """
+    if todos is None:
+        # 读模式：没有 todos 参数
+        return json.dumps({"todos": store.read()})
+    
+    # 写模式
+    result = store.write(todos, merge=merge)
+    return json.dumps({"todos": result})</code></pre><hr/><span class="heading-anchor" id="section-16"></span><h2>5. Discovery: How tools are found</h2><span class="heading-anchor" id="section-17"></span><h3>5.1 Introducing the problem</h3><p>With over 60 tools, manually importing every file at startup would be verbose:</p><pre><code># ❌ 错误方式：维护一个巨大的 import 列表
+import tools.todo_tool
+import tools.file_tools
+import tools.terminal_tool
+import tools.web_tools
+# ... 60 行...
+
+# 如果要加一个新工具，要改这个列表</code></pre><span class="heading-anchor" id="section-18"></span><h3>5.2 Hermes' solution: Automatic discovery</h3><p><code>model_tools.py</code> dynamically imports every tool during module loading through <code>importlib</code>:</p><pre><code>def _discover_tools():
+    """
+    导入所有工具模块。
+    每个模块在 import 时，末尾的 registry.register() 自动执行。
+    这样新增工具只需要新增文件，不需要改这个列表。
+    """
+    _modules = [
+        "tools.ansi_strip",
+        "tools.binary_extensions",
+        "tools.browser_camofox",
+        "tools.browser_tool",
+        "tools.budget_config",
+        "tools.checkpoint_manager",
+        "tools.clarify_tool",
+        "tools.code_execution_tool",
+        "tools.credential_files",
+        "tools.cronjob_tools",
+        "tools.debug_helpers",
+        "tools.delegate_tool",
+        "tools.env_passthrough",
+        "tools.file_operations",
+        "tools.file_tools",
+        "tools.fuzzy_match",
+        "tools.homeassistant_tool",
+        "tools.image_generation_tool",
+        "tools.interrupt",
+        "tools.managed_tool_gateway",
+        "tools.mcp_oauth",
+        "tools.mcp_tool",
+        "tools.memory_tool",
+        "tools.mixture_of_agents_tool",
+        "tools.neutts_synth",
+        # ... 60+ 个 ...
+    ]
+    
+    for mod_name in _modules:
+        try:
+            importlib.import_module(mod_name)
+        except Exception as e:
+            logger.warning("Could not import tool module %s: %s", mod_name, e)
+
+# 模块被加载时自动执行注册
+_discover_tools()</code></pre><span class="heading-anchor" id="section-19"></span><h3>5.3 Automatic registration during module loading</h3><p>Take <code>file_tools.py</code> as an example. At the end of the file:</p><pre><code># ========== 文件末尾 ==========
+
+registry.register(
+    name="read_file",
+    toolset="file",
+    schema=READ_FILE_SCHEMA,
+    handler=_handle_read_file,
+    check_fn=_check_file_reqs,
+    emoji="📖",
+    max_result_size_chars=float('inf')  # 不限制返回大小
+)
+
+registry.register(
+    name="write_file",
+    toolset="file",
+    schema=WRITE_FILE_SCHEMA,
+    handler=_handle_write_file,
+    check_fn=_check_file_reqs,
+    emoji="✍️",
+    max_result_size_chars=100_000
+)
+
+registry.register(name="patch", ...)
+registry.register(name="search_files", ...)</code></pre><p><strong>When <code>importlib.import_module("tools.file_tools")</code> executes, Python runs the file from beginning to end. The final <code>registry.register()</code> registers the tool.</strong></p><span class="heading-anchor" id="section-20"></span><h3>5.4 The complete process for adding a tool</h3><p><strong>Adding a tool requires just two things:</strong></p><pre><code># 第1步：在 tools/ 目录下新建文件，比如 tools/weather_tool.py
+
+# 第2步：在 _discover_tools() 的列表里加一行（或者某些情况下完全不用加）
+# 不，等一下——实际上只需要做第一步就够了
+# 因为 model_tools.py 已经硬编码了这个列表
+# 所以严格来说是：新增文件 + 修改 _modules 列表</code></pre><hr/><span class="heading-anchor" id="section-21"></span><h2>6. Tracing the complete invocation path</h2><span class="heading-anchor" id="section-22"></span><h3>6.1 The full path from user input to tool execution</h3><pre><code>用户："帮我读取 test.py"
+
+        │
+        ▼ ① Gateway 适配器解析用户消息
+           unified_message = {user_id, text: "帮我读取 test.py", ...}
+        │
+        ▼ ② run_agent.run_conversation()
+           把消息加入 messages[]
+        │
+        ▼ ③ 组装系统提示词（prompt_builder）
+        │
+        ▼ ④ 发 API 给 AI 模型
+           client.chat.completions.create(
+               messages=[系统提示词, 用户消息],
+               tools=[read_file schema, write_file schema, ...]
+           )
+        │
+        ▼ ⑤ AI 模型思考，决定调用 read_file
+           response.tool_calls = [
+               {"name": "read_file", "args": {"path": "test.py", "offset": 1, "limit": 500}}
+           ]
+        │
+        ▼ ⑥ 主循环发现 tool_calls，执行工具
+           from model_tools import handle_function_call
+           │
+           ▼ ⑦ handle_function_call 路由
+              │
+              ▼ ⑧ registry.dispatch("read_file", args)
+                 │
+                 ▼ ⑨ 找到 read_file 的 ToolEntry
+                    entry = registry._tools["read_file"]
+                    │
+                    ▼ ⑩ 调用 handler
+                       result = entry.handler(args)
+                       # 内部执行 open("test.py").read()
+                       # 返回 json.dumps({"content": "...", "total_lines": 50})
+                    │
+                    ▼ ⑪ 把结果加回 messages[]
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": "xxx",
+                        "content": '{"content": "...", "total_lines": 50}'
+                    })
+                 │
+                 ▼ ⑫ 回到循环开头，再次发 API 给模型
+                    "用户要我读文件，我已经读完了，这是内容：..."
+        │
+        ▼ ⑬ AI 模型看到文件内容，组织语言回复用户
+           最终回复（无 tool_calls）→ break 循环
+        │
+        ▼ ⑭ Gateway 把回复发回给用户</code></pre><span class="heading-anchor" id="section-23"></span><h3>6.2 What does <code>handle_function_call</code> do?</h3><pre><code># model_tools.py
+
+def handle_function_call(
+    function_name: str,
+    function_args: Dict[str, Any],
+    task_id: Optional[str] = None,
+    tool_call_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    user_task: Optional[str] = None,
+    enabled_tools: Optional[List[str]] = None,
+    skip_pre_tool_call_hook: bool = False,
+) -&gt; str:
+    """
+    工具调用的分发入口。
+    所有工具调用都经过这里。
+    """
+    # 第1步：类型强制转换（"42" → 42, "true" → True）
+    function_args = coerce_tool_args(function_name, function_args)
+    
+    # 第2步：插件钩子（pre_tool_call）
+    # 允许插件在工具执行前拦截或阻止
+    if not skip_pre_tool_call_hook:
+        block_message = get_pre_tool_call_block_message(...)
+        if block_message is not None:
+            return json.dumps({"error": block_message})
+    
+    # 第3步：执行工具
+    if function_name == "execute_code":
+        # execute_code 比较特殊，需要传入 enabled_tools
+        result = registry.dispatch(
+            "execute_code", function_args,
+            task_id=task_id,
+            enabled_tools=enabled_tools
+        )
+    else:
+        result = registry.dispatch(
+            function_name, function_args,
+            task_id=task_id,
+            user_task=user_task
+        )
+    
+    # 第4步：插件钩子（post_tool_call）
+    invoke_hook("post_tool_call", tool_name=function_name, ...)
+    
+    return result</code></pre><span class="heading-anchor" id="section-24"></span><h3>6.3 What does <code>registry.dispatch</code> do?</h3><pre><code># tools/registry.py
+
+class ToolRegistry:
+    def dispatch(self, name: str, args: dict, **kwargs) -&gt; str:
+        """根据名字找到工具，执行它，返回 JSON 字符串。"""
+        
+        # 第1步：找到工具条目
+        entry = self.get_entry(name)
+        if not entry:
+            return json.dumps({"error": f"Unknown tool: {name}"})
+        
+        # 第2步：调用 handler
+        try:
+            if entry.is_async:
+                # 异步工具（使用了 async def 的工具）
+                from model_tools import _run_async
+                return _run_async(entry.handler(args, **kwargs))
+            return entry.handler(args, **kwargs)
+        
+        # 第3步：异常处理
+        except Exception as e:
+            logger.exception("Tool %s dispatch error: %s", name, e)
+            return json.dumps({
+                "error": f"Tool execution failed: {type(e).__name__}: {e}"
+            })</code></pre><hr/><span class="heading-anchor" id="section-25"></span><h2>7. Toolsets: Managing tools in groups</h2><span class="heading-anchor" id="section-26"></span><h3>7.1 Why are toolsets needed?</h3><p>With over 60 tools, disabling all file-operation tools would otherwise require configuring each individually:</p><pre><code># ❌ 没有工具集时：
+disabled_tools = ["read_file", "write_file", "patch", "search_files", ...]</code></pre><p>With a toolset, one configuration line is enough:</p><pre><code># ✅ 有工具集时：
+disabled_toolsets = ["file"]  # 关闭整个 file 工具组</code></pre><span class="heading-anchor" id="section-27"></span><h3>7.2 Toolset definitions (toolsets.py)</h3><pre><code># toolsets.py
+
+_HERMES_CORE_TOOLS = [
+    # file 工具集：文件操作
+    "tools.file_tools",
+    
+    # terminal 工具集：命令执行
+    "tools.terminal_tool",
+    
+    # delegate 工具集：子 Agent
+    "tools.delegate_tool",
+    
+    # session 工具集：会话搜索
+    "tools.session_search_tool",
+    
+    # ... 更多核心工具
+]
+
+_OPTIONAL_TOOLS = {
+    "web": [
+        "tools.web_tools",
+        "tools.browser_tool",
+    ],
+    "image_gen": [
+        "tools.image_generation_tool",
+        "tools.tts_tool",
+        "tools.transcription_tools",
+    ],
+    "cronjob": [
+        "tools.cronjob_tools",
+    ],
+    "skills": [
+        "tools.skill_manager_tool",
+        "tools.skills_sync",
+        "tools.skills_tool",
+    ],
+    "mcp": [
+        "tools.mcp_tool",
+    ],
+}</code></pre><span class="heading-anchor" id="section-28"></span><h3>7.3 Toolset availability checks</h3><p>Each tool can declare a <code>check_fn</code> (availability-check function):</p><pre><code>def _check_file_reqs() -&gt; bool:
+    """文件工具：始终可用（纯本地操作）"""
+    return True
+
+def _check_browser_reqs() -&gt; bool:
+    """浏览器工具：需要 BROWSERBASE_API_KEY"""
+    import os
+    return bool(os.getenv("BROWSERBASE_API_KEY"))
+
+registry.register(
+    name="browser_navigate",
+    toolset="browser",
+    schema=BROWSER_NAVIGATE_SCHEMA,
+    handler=browser_navigate,
+    check_fn=_check_browser_reqs,  # 没有 API Key 时自动不可用
+    requires_env=["BROWSERBASE_API_KEY"],
+)</code></pre><hr/><span class="heading-anchor" id="section-29"></span><h2>8. Hands-on: Adding a weather-query tool to Hermes</h2><span class="heading-anchor" id="section-30"></span><h3>8.1 Goal</h3><p>Create a <code>weather</code> tool:</p><ul><li>Input: City name as a string</li><li>Output: Weather information—temperature, humidity, and conditions</li><li>Calls an external weather API</li></ul><span class="heading-anchor" id="section-31"></span><h3>8.2 Step 1: Create the tool file</h3><pre><code># tools/weather_tool.py
+
+import json
+import os
+import urllib.request
+from typing import Dict, Any
+
+# ============================================================
+# Schema：给 AI 模型看的说明书
+# ============================================================
+
+WEATHER_SCHEMA = {
+    "name": "weather",
+    "description": (
+        "Get current weather and forecast for a city.\n\n"
+        "Use when: user asks about weather, temperature, rain, whether to bring an umbrella, etc.\n\n"
+        "Returns: temperature (°C), conditions, humidity (%), wind speed, and forecast for 3 days.\n\n"
+        "Note: Weather data from wttr.in (no API key required)."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "city": {
+                "type": "string",
+                "description": (
+                    "City name or location. "
+                    "Examples: 'Beijing', 'Tokyo', 'New York', 'London UK', 'Tokyo JP'"
+                )
+            }
+        },
+        "required": ["city"]
+    }
+}
+
+# ============================================================
+# Handler：真正做事的函数
+# ============================================================
+
+def check_weather_requirements() -&gt; bool:
+    """weather 工具不需要 API key，wttr.in 是免费服务"""
+    return True
+
+def weather_tool(city: str, task_id: str = "default") -&gt; str:
+    """
+    获取城市天气信息。
+    
+    Args:
+        city: 城市名
+        task_id: 任务 ID（用于缓存等）
+    
+    Returns:
+        JSON 字符串，包含天气信息
+    """
+    if not city or not city.strip():
+        return json.dumps({"error": "City name is required"})
+    
+    city = city.strip()
+    
+    try:
+        # wttr.in 是一个免费的天气预报服务，不需要 API key
+        # 格式：JSON
+        url = f"https://wttr.in/{city}?format=j1"
+        
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0 Hermes-Agent"}
+        )
+        
+        with urllib.request.urlopen(req, timeout=10) as response:
+            data = json.loads(response.read().decode("utf-8"))
+        
+        # 解析 wttr.in 的返回格式
+        current = data["current_condition"][0]
+        nearest_area = data["nearest_area"][0]
+        
+        result = {
+            "city": nearest_area.get("areaName", [{}])[0].get("value", city),
+            "country": nearest_area.get("country", [{}])[0].get("value", ""),
+            "temperature_c": current["temp_C"],
+            "feels_like_c": current["FeelsLikeC"],
+            "humidity": current["humidity"],
+            "weather": current["weatherDesc", [{}])[0].get("value", ""),
+            "wind_speed_kmh": current["windspeedKmph"],
+            "wind_dir": current["winddir16Point"],
+            "uv_index": current["uvIndex"],
+            "forecast": []
+        }
+        
+        # 解析 3 天预报
+        for day in data["weather"]:
+            result["forecast"].append({
+                "date": day["date"],
+                "max_temp_c": day["maxtempC"],
+                "min_temp_c": day["mintempC"],
+                "avg_temp_c": day["avgtempC"],
+                "condition": day["hourly"][4]["weatherDesc"][0]["value"],
+            })
+        
+        return json.dumps({
+            "success": True,
+            "data": result
+        })
+    
+    except urllib.error.URLError as e:
+        return json.dumps({
+            "error": f"Failed to fetch weather for '{city}': network error. "
+                     f"Please check the city name and try again."
+        })
+    except Exception as e:
+        return json.dumps({
+            "error": f"Failed to fetch weather: {str(e)}"
+        })
+
+# ============================================================
+# 注册到全局注册表
+# ============================================================
+
+from tools.registry import registry
+
+registry.register(
+    name="weather",
+    toolset="web",          # 天气属于 web 工具集（依赖网络）
+    schema=WEATHER_SCHEMA,
+    handler=lambda args, **kw: weather_tool(
+        city=args.get("city", ""),
+        task_id=kw.get("task_id", "default")
+    ),
+    check_fn=check_weather_requirements,
+    emoji="🌤️",
+)</code></pre><span class="heading-anchor" id="section-32"></span><h3>8.3 Step 2: Register it in the discovery list</h3><p>In <code>model_tools.py</code>, within the <code>_discover_tools()</code> function, find the <code>_modules</code> list and add:</p><pre><code>_modules = [
+    # ... 现有模块 ...
+    "tools.weather_tool",  # ← 添加这一行
+]</code></pre><span class="heading-anchor" id="section-33"></span><h3>8.4 Step 3: Verify</h3><pre><code># 重启 Hermes（或在新会话中）
+
+# 问 Hermes：
+# "北京今天天气怎么样？"
+
+# Hermes 会自动调用 weather 工具：
+# tool_call: weather(city="北京")
+# 
+# 工具返回：
+# {"success": true, "data": {"city": "Beijing", "temperature_c": "12", ...}}
+# 
+# Hermes 把结果组织成自然语言回复你：
+# "北京今天气温12°C，湿度45%，天气晴朗，适合外出..."</code></pre><span class="heading-anchor" id="section-34"></span><h3>8.5 Reviewing the complete invocation path</h3><pre><code>用户问天气
+    │
+    ▼ AI 模型决定调用 weather(city="北京")
+    │
+    ▼ model_tools.handle_function_call("weather", {"city": "北京"})
+    │
+    ▼ registry.dispatch("weather", args)
+    │
+    ▼ weather_tool(city="北京")
+         │
+         ▼ urllib.request.urlopen("https://wttr.in/北京?format=j1")
+         │
+         ▼ 解析 JSON 返回
+         │
+         ▼ json.dumps({"success": true, "data": {...}})
+    │
+    ▼ 结果回到 AI 模型
+    │
+    ▼ AI 组织自然语言回复用户</code></pre><hr/><span class="heading-anchor" id="section-35"></span><h2>Summary</h2><p>After this chapter, you should understand:</p><ul><li>Where the tool system fits in Hermes' architecture</li><li>The registry pattern's advantages over class inheritance</li><li>Schema structure and how the AI model uses it</li><li>Standard handler signatures and return-value conventions</li><li>Automatic tool discovery</li><li>The full invocation path from user input to tool execution</li><li>Why tools are grouped into toolsets</li><li>How to add a new Hermes tool through a complete practical example</li></ul><p> </p><p></p>
+<hr><p>Originally published on the Preface Lab WeChat account: <a href="https://mp.weixin.qq.com/s/iFqpV1Yg0AZjc6f9U72Low">Read the original WeChat article</a>.</p></article><aside class="toc"><h2>On this page</h2><ol><li><a href="#section-0">Contents</a></li><li><a href="#section-1">1. Where the tool system fits in the architecture</a></li><li><a href="#section-2">2. The registry pattern in detail</a></li><li><a href="#section-3">2.1 What is the registry pattern?</a></li><li><a href="#section-4">2.2 ToolRegistry&#x27;s data structure</a></li><li><a href="#section-5">2.3 Why not class inheritance?</a></li><li><a href="#section-6">3. Schema: An instruction manual for the AI model</a></li><li><a href="#section-7">3.1 What is a schema?</a></li><li><a href="#section-8">3.2 Schema structure</a></li><li><a href="#section-9">3.3 How does the AI model use a schema?</a></li><li><a href="#section-10">3.4 Best practices for writing schemas</a></li><li><a href="#section-11">4. Handler: The Python function that does the work</a></li><li><a href="#section-12">4.1 A handler&#x27;s responsibilities</a></li><li><a href="#section-13">4.2 Standard handler signature</a></li><li><a href="#section-14">4.3 Why return a JSON string?</a></li><li><a href="#section-15">4.4 A real handler example</a></li><li><a href="#section-16">5. Discovery: How tools are found</a></li><li><a href="#section-17">5.1 Introducing the problem</a></li><li><a href="#section-18">5.2 Hermes&#x27; solution: Automatic discovery</a></li><li><a href="#section-19">5.3 Automatic registration during module loading</a></li><li><a href="#section-20">5.4 The complete process for adding a tool</a></li><li><a href="#section-21">6. Tracing the complete invocation path</a></li><li><a href="#section-22">6.1 The full path from user input to tool execution</a></li><li><a href="#section-23">6.2 What does handle_function_call do?</a></li><li><a href="#section-24">6.3 What does registry.dispatch do?</a></li><li><a href="#section-25">7. Toolsets: Managing tools in groups</a></li><li><a href="#section-26">7.1 Why are toolsets needed?</a></li><li><a href="#section-27">7.2 Toolset definitions (toolsets.py)</a></li><li><a href="#section-28">7.3 Toolset availability checks</a></li><li><a href="#section-29">8. Hands-on: Adding a weather-query tool to Hermes</a></li><li><a href="#section-30">8.1 Goal</a></li><li><a href="#section-31">8.2 Step 1: Create the tool file</a></li><li><a href="#section-32">8.3 Step 2: Register it in the discovery list</a></li><li><a href="#section-33">8.4 Step 3: Verify</a></li><li><a href="#section-34">8.5 Reviewing the complete invocation path</a></li><li><a href="#section-35">Summary</a></li></ol><a class="back-top" href="#main">Back to top ↑</a></aside></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

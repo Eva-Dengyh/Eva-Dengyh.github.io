@@ -1,0 +1,489 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Agent Tutorial (2): System Architecture and Design · Eva Lab</title><meta name="description" content="Hermes Agent: System Architecture and Design Intended audience: Developers seeking a systematic understanding …">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/hermes-agent-2-architecture/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/hermes-agent-2-architecture/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/hermes-agent-2-architecture/">
+<meta property="og:title" content="Hermes Agent Tutorial (2): System Architecture and Design"><meta property="og:description" content="Hermes Agent: System Architecture and Design Intended audience: Developers seeking a systematic understanding …">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/hermes-agent-2-architecture/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Hermes Agent Tutorial (2): System Architecture and Design", "datePublished": "2026-04-15", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/hermes-agent-2-architecture/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/hermes-agent-2-architecture/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/hermes-agent-2-architecture/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">AI & agents</p><h1>Hermes Agent Tutorial (2): System Architecture and Design</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-15">2026.04.15</time><span>·</span><span>21 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><h1>Hermes Agent: System Architecture and Design</h1><blockquote><p>Intended audience: Developers seeking a systematic understanding of Hermes Agent's architecture and design philosophy<br/>Prerequisites: Familiarity with AI agents and LLMs (large language models)<br/>Documentation: https://github.com/Eva-Dengyh/AI-Fullstack-Notes</p></blockquote><hr/><span class="heading-anchor" id="section-0"></span><h2>Contents</h2><ul><li>Chapter 1: What Is Hermes?</li><li>Chapter 2: Why Has Hermes Taken Off?</li><li>Chapter 3: System Architecture Overview</li><li>Chapter 4: Core Module Design</li><li>Chapter 5: The Tool System—Registry Pattern</li><li>Chapter 6: The Messaging Gateway—Adapter Pattern</li><li>Chapter 7: The AI Loop—ReAct Pattern</li><li>Chapter 8: Prompt Construction—Layered Assembly</li><li>Chapter 9: Memory and Skills</li><li>Chapter 10: Model Abstraction—Provider Pattern</li><li>Chapter 11: What Makes the Architecture Good?</li><li>Chapter 12: Popular Features Explained</li></ul><hr/><span class="heading-anchor" id="section-1"></span><h2>Chapter 1: What Is Hermes?</h2><p><strong>A one-sentence definition:</strong></p><p>Hermes Agent is a <strong>self-improving AI agent framework</strong> built by Nous Research. It is one of the most complete open-source agent solutions available, integrating multiplatform access, persistent memory, evolving skills, and parallel subagent execution.</p><p><strong>What you can do with it:</strong></p><pre><code>在终端里跟它聊天                    ✅
+在 Telegram 里跟它聊天              ✅
+在 Discord 里跟它聊天               ✅
+在微信里跟它聊天                    ✅
+让它帮你读写文件、搜索网页、跑代码     ✅
+让它记住你说过的重要事情              ✅
+让它从错误里学习，下次做得更好         ✅
+设置定时任务让它自动执行              ✅
+同时做多件独立的事（子Agent）         ✅
+切换到任何一个 LLM 模型              ✅
+把它部署在云端，省电省钱              ✅</code></pre><p><strong>Why "Hermes"?</strong></p><p>Hermes, the messenger god of Greek mythology, was the fastest and best informed. The name reflects two core agent capabilities: <strong>delivering messages</strong> and <strong>responding quickly</strong>.</p><hr/><span class="heading-anchor" id="section-2"></span><h2>Chapter 2: Why Has Hermes Taken Off?</h2><span class="heading-anchor" id="section-3"></span><h3>2.1 The AI Agent Market in 2024–2025</h3><p>Most AI agent products have the following pain points:</p><table><thead><tr><th>Competitor Limitation</th><th>Hermes's Solution</th></tr></thead><tbody><tr><td>Locked to one model, such as Claude or GPT</td><td>Switch to any model with one configuration change, without changing code</td></tr><tr><td>Locked to one platform, such as Telegram or Discord</td><td>One gateway connects all major chat platforms</td></tr><tr><td>Every conversation starts from scratch, with no memory of previous events</td><td>Persistent memory and Skills accumulate across sessions</td></tr><tr><td>Fixed functionality with no way to add capabilities</td><td>60+ built-in tools plus the MCP extension protocol</td></tr><tr><td>Resource consumption and high always-on operating costs</td><td>Cloud hibernation on Daytona or Modal, with near-zero idle costs</td></tr><tr><td>Closed source and not customizable</td><td>Fully open source under the MIT license</td></tr></tbody></table><span class="heading-anchor" id="section-4"></span><h3>2.2 Hermes's Core Differentiators</h3><pre><code>你想要的                        Hermes 做到的
+─────────────────────────────────────────────────────
+换模型（Claude → GPT → 开源模型）    ✅ 一个 /model 命令，秒级切换
+换平台（终端 → Telegram → 微信）     ✅ 一个 gateway，配置即接
+Agent 记住重要信息                  ✅ 跨会话持久记忆
+Agent 学会新技能                   ✅ Skills 系统，经验可复用
+后台自动跑任务                      ✅ Cron 定时任务，自然语言配置
+同时做多件事                       ✅ 子 Agent 并行执行
+省成本（不用时休眠）                ✅ Daytona/Modal 云端休眠，近零费用
+本地运行，保护隐私                  ✅ 全开源，可私有化部署
+─────────────────────────────────────────────────────</code></pre><span class="heading-anchor" id="section-5"></span><h3>2.3 Technical Highlights</h3><p>Several Hermes modules achieve industry-leading capabilities in their respective areas:</p><ul><li><strong>Memory system</strong>: Full-session history search using SQLite FTS5, plus LLM summaries</li><li><strong>Skills system</strong>: Agent-driven automatic extraction and reuse of experience</li><li><strong>Context compression</strong>: Intelligent summary-based compression that preserves key information</li><li><strong>Terminal backends</strong>: Six supported backends: local, Docker, SSH, Daytona, Modal, and Singularity</li><li><strong>MCP integration</strong>: Connect any external tool server using Model Context Protocol</li></ul><hr/><span class="heading-anchor" id="section-6"></span><h2>Chapter 3: System Architecture Overview</h2><span class="heading-anchor" id="section-7"></span><h3>3.1 Overall Architecture</h3><pre><code>┌──────────────────────────────────────────────────────────────────────┐
+│                              用户（你）                                │
+│           终端 / Telegram / Discord / WhatsApp / Signal / Email        │
+└─────────────────────────────┬────────────────────────────────────────┘
+                              │  各自平台协议
+                              ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                    Hermes Gateway（消息网关）                          │
+│                                                                       │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌────────────┐ │
+│  │ Telegram    │  │ Discord     │  │ Slack       │  │ Email      │ │
+│  │ 适配器       │  │ 适配器       │  │ 适配器       │  │ 适配器      │ │
+│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └─────┬──────┘ │
+│         └────────────────┴────────────────┴───────────────┘         │
+│                                │                                      │
+│                       ┌────────▼────────┐                           │
+│                       │  run.py           │                           │
+│                       │  统一消息格式      │                           │
+│                       │  Session 管理     │                           │
+│                       │  Slash 命令路由    │                           │
+│                       └────────┬────────┘                           │
+└────────────────────────────────┼────────────────────────────────────┘
+                                 │  统一消息对象
+                                 ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                     Hermes Agent Core（核心）                          │
+│                                                                       │
+│  ┌────────────────────────────────────────────────────────────────┐ │
+│  │                    run_agent.py（AIAgent）                       │ │
+│  │                                                                │ │
+│  │    while 未完成:                                                │ │
+│  │        发消息给 AI 模型（带系统提示词 + 工具定义）                 │ │
+│  │        if 模型要求调用工具:                                       │ │
+│  │            从注册表找到工具 → 执行 → 把结果返回给模型               │ │
+│  │        else:                                                    │ │
+│  │            这是最终回复 → 返回给用户                              │ │
+│  └────────────────────────────────────────────────────────────────┘ │
+│                                                                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+│  │ prompt_      │  │ 工具注册表     │  │ SessionDB                │  │
+│  │ builder      │  │(registry.py)  │  │(SQLite + FTS5)          │  │
+│  │组装系统提示词  │  │工具发现+分发   │  │会话持久化+历史全文搜索   │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────────┘  │
+│                                                                       │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────────────┐  │
+│  │context_      │  │ memory_      │  │ toolsets.py              │  │
+│  │compressor    │  │ manager      │  │ 工具分组+按平台启用/禁用   │  │
+│  │对话太长时压缩  │  │ 跨会话记忆    │  │                          │  │
+│  └──────────────┘  └──────────────┘  └──────────────────────────┘  │
+└─────────────────────────────┬────────────────────────────────────────┘
+                              │  执行工具
+                              ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│                         工具集合（tools/）                            │
+│                                                                       │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌────────┐  ┌────────┐      │
+│  │file_    │  │terminal │  │web_     │  │delegate│  │browser │      │
+│  │tools    │  │_tool    │  │tools    │  │_tool   │  │_tool   │      │
+│  │读/写文件 │  │执行命令  │  │搜索网页  │  │子Agent │  │浏览器  │      │
+│  └─────────┘  └─────────┘  └─────────┘  └────────┘  └────────┘      │
+│                                                                       │
+│  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌────────┐  ┌────────┐      │
+│  │memory_  │  │skill_   │  │cronjob_ │  │vision_ │  │tts_    │      │
+│  │tool     │  │tools    │  │tools    │  │tools   │  │tool    │      │
+│  │记忆管理  │  │技能管理  │  │定时任务  │  │图片分析  │  │语音合成  │      │
+│  └─────────┘  └─────────┘  └─────────┘  └────────┘  └────────┘      │
+└──────────────────────────────────────────────────────────────────────┘</code></pre><span class="heading-anchor" id="section-8"></span><h3>3.2 Data-flow Overview</h3><pre><code>用户说："帮我读 test.py 并总结内容"
+
+        ① 消息格式统一化（Gateway 适配器）
+              │
+              ▼
+        ② 查找/创建 Session（SQLite）
+              │
+              ▼
+        ③ 组装系统提示词（prompt_builder）
+              │  身份 + 工具列表 + 用户偏好 + 记忆上下文
+              ▼
+        ④ 发给 AI 模型（"用户要读文件并总结，有哪些工具可用？"）
+              │
+              ▼
+        ⑤ AI 思考后返回 tool_call
+              │  name="read_file", args={path: "test.py"}
+              ▼
+        ⑥ 从注册表找到 read_file handler，执行它
+              │
+              ▼
+        ⑦ 文件内容返回给 AI 模型（结果加入 messages）
+              │
+              ▼
+        ⑧ AI 再次思考："我读到了文件内容，现在总结它"
+              │
+              ▼
+        ⑨ AI 返回最终总结（不再有 tool_call）
+              │
+              ▼
+        ⑩ 回复显示给用户</code></pre><hr/><span class="heading-anchor" id="section-9"></span><h2>Chapter 4: Core Module Design</h2><p>Hermes's architecture revolves around three core questions:</p><pre><code>问题1：工具越来越多，怎么管理？       → 注册表模式（Registry Pattern）
+问题2：模型越来越多，怎么切换？       → Provider 抽象层
+问题3：功能越来越多，代码怎么改？      → 插件化（Plugins）+ Skills</code></pre><hr/><span class="heading-anchor" id="section-10"></span><h2>Chapter 5: The Tool System (Registry Pattern)</h2><span class="heading-anchor" id="section-11"></span><h3>5.1 Background</h3><ul><li>Hermes includes 60+ tools and supports dynamic expansion through MCP</li><li>The tool count continues to grow without making the code chaotic</li><li>Tools have different dependencies: some require API keys, while others only operate on local files</li><li>Tools must be enabled or disabled by platform; for example, certain sensitive tools are enabled only in CLI mode</li></ul><span class="heading-anchor" id="section-12"></span><h3>5.2 Three-layer Architecture</h3><pre><code>第1层：定义层（每个工具文件）
+  tools/file_tools.py  ─┐
+  tools/terminal_tool.py ─┼─ 每个文件末尾调用 registry.register()
+  tools/web_tools.py    ─┘
+
+第2层：注册中心（tools/registry.py）
+  唯一真相来源：_registry[name] = ToolEntry(...)
+  提供 register() / get() / dispatch() 三个接口
+
+第3层：分发层（model_tools.py）
+  handle_function_call(name, args)
+  根据 name 找到 registry entry，调用 handler，返回 JSON 字符串</code></pre><span class="heading-anchor" id="section-13"></span><h3>5.3 Tool Registration</h3><p>Each tool file, such as <code>todo_tool.py</code>, has the following structure:</p><pre><code># ============ 第1步：定义 Schema（给 AI 模型看的说明书）============
+
+TODO_SCHEMA = {
+    "name": "todo",
+    "description": (
+        "管理任务清单。..."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "todos": {
+                "type": "array",
+                "description": "任务列表..."
+            },
+            "merge": {
+                "type": "boolean",
+                "description": "是否合并..."
+            }
+        },
+        "required": []
+    }
+}
+
+# ============ 第2步：实现 Handler（真正做事的 Python 函数）============
+
+def todo_tool(todos=None, merge=False, store=None):
+    # ... 实际逻辑 ...
+    return json.dumps({"todos": current_list})
+
+# ============ 第3步：注册到全局注册表（末尾调用一次即可）============
+
+registry.register(
+    name="todo",                    # 工具名
+    toolset="todo",                 # 属于哪个工具组
+    schema=TODO_SCHEMA,              # Schema 说明书
+    handler=lambda args, **kw: todo_tool(...),  # 执行函数
+    check_fn=check_todo_requirements,  # 可用性检查
+    emoji="📋",                      # UI 图标
+)</code></pre><p><strong>Key Insight: Schema and Handler Are Completely Separate</strong></p><ul><li>The schema is an instruction manual for the AI model, describing the tool's name, parameters, and function</li><li>The handler is the executor: the actual Python logic</li><li>Changing the schema does not affect the handler, and vice versa</li></ul><span class="heading-anchor" id="section-14"></span><h3>5.4 Tool Discovery</h3><p>Tool loading is <strong>fully automatic</strong> and happens when <code>model_tools.py</code> is imported:</p><pre><code>def _discover_tools():
+    """Import all tool modules to trigger their registry.register() calls."""
+    _modules = [
+        "tools.todo_tool",
+        "tools.file_tools",
+        "tools.terminal_tool",
+        "tools.web_tools",
+        # ... 60+ 个模块
+    ]
+    for mod_name in _modules:
+        importlib.import_module(mod_name)  # 导入时自动注册
+
+_discover_tools()  # 模块加载时立即执行</code></pre><p><strong>Adding a tool therefore means adding a Python file and one registration line at the bottom, with zero configuration.</strong></p><span class="heading-anchor" id="section-15"></span><h3>5.5 Toolset Grouping</h3><p>Tools are grouped by function, and each group can be enabled or disabled as a whole:</p><pre><code>toolset "file"      → read_file, write_file, patch, search_files
+toolset "terminal"  → terminal, process (background process)
+toolset "web"       → web_search, browser_navigate, browser_snapshot
+toolset "delegate"  → delegate_task (子 Agent)
+toolset "session"  → session_search (跨会话搜索)
+toolset "skills"    → skill_view, skill_manage, skills_list</code></pre><p>Users can configure groups through the <code>hermes tools</code> command rather than setting up each tool individually.</p><hr/><span class="heading-anchor" id="section-16"></span><h2>Chapter 6: The Messaging Gateway (Adapter Pattern)</h2><span class="heading-anchor" id="section-17"></span><h3>6.1 Background</h3><p>Different chat platforms use entirely different messaging protocols:</p><pre><code>Telegram：     通过 Bot API (HTTP Long Polling)
+Discord：      通过 WebSocket Gateway API
+Slack：        通过 WebSocket + HTTP
+WhatsApp：     通过 Baileys/Meta 官方 API
+Email：        通过 IMAP/SMTP</code></pre><p>If platform-specific handling lives directly in the core, every new platform requires risky changes to core code.</p><span class="heading-anchor" id="section-18"></span><h3>6.2 Adapter-pattern Architecture</h3><pre><code>                        统一消息格式
+                         ▲
+                         │ Gateway Core (run.py)
+                         │
+┌────────────────────────┼─────────────────────────────────────────────┐
+│                        │                                             │
+│    ┌───────────────────┴───────────────────┐                         │
+│    │                                       │                         │
+│    ▼                                       ▼                         │
+│  Telegram 适配器                        Discord 适配器                  │
+│  platform/telegram.py                   platform/discord.py           │
+│                                         │                             │
+│  解析 Telegram API                      解析 Discord WebSocket         │
+│  → 统一消息                             → 统一消息                     │
+│                                         │                             │
+│  发送：统一回复                         发送：统一回复                 │
+│  → Telegram API                         → Discord API                │
+└───────────────────────────────────────────────────────────────────────┘</code></pre><p><strong>Unified message format, defined by the Gateway Core:</strong></p><pre><code>class UnifiedMessage:
+    user_id: str          # 用户唯一标识
+    platform: str         # "telegram" / "discord" / ...
+    text: str             # 消息文本
+    attachments: list      # 图片/文件等附件
+    chat_id: str          # 会话 ID
+    thread_id: str | None # 话题 ID（支持 Discord thread 等）
+    timestamp: datetime   # 时间戳</code></pre><span class="heading-anchor" id="section-19"></span><h3>6.3 Why Is This Design Good?</h3><ul><li><strong>Adding a platform</strong>: Write only a new adapter file, around 500–1,000 lines; the core <code>run.py</code> requires no changes</li><li><strong>Independent evolution</strong>: Each platform adapter can be tested and upgraded independently</li><li><strong>Fault isolation</strong>: A crash in one platform's adapter does not affect other platforms or the core</li></ul><hr/><span class="heading-anchor" id="section-20"></span><h2>Chapter 7: The AI Loop (ReAct Pattern)</h2><span class="heading-anchor" id="section-21"></span><h3>7.1 What Is ReAct?</h3><p>ReAct = <strong>Re</strong>ason + <strong>Act</strong>. This is currently the dominant design pattern for AI agents:</p><pre><code>Reason（思考）：AI 模型分析当前情况，决定下一步做什么
+Act（行动）：   AI 模型调用工具执行
+
+交替进行，直到任务完成</code></pre><span class="heading-anchor" id="section-22"></span><h3>7.2 Hermes's AI Loop</h3><pre><code>┌─────────────────────────────────────────────────────────────┐
+│                     run_agent.py 核心循环                     │
+│                                                             │
+│  while (api_call_count &lt; max_iterations                     │
+│         AND iteration_budget.remaining &gt; 0):                 │
+│                                                             │
+│      ┌──────────────────────────────────────────────────┐  │
+│      │  Step 1：发 API 请求                               │  │
+│      │                                                   │  │
+│      │  client.chat.completions.create(                 │  │
+│      │    messages=[                                     │  │
+│      │      {role:"system", content:系统提示词},         │  │
+│      │      {role:"user",   content:用户输入},           │  │
+│      │      {role:"assistant",content:AI上一轮回复},     │  │
+│      │      ...（完整对话历史）                           │  │
+│      │    ],                                             │  │
+│      │    tools=[read_file_schema, web_search_schema]   │  │
+│      │  )                                                │  │
+│      └──────────────────────────────────────────────────┘  │
+│                           │                                  │
+│                           ▼                                  │
+│      ┌──────────────────────────────────────────────────┐  │
+│      │  Step 2：判断返回类型                              │  │
+│      │                                                   │  │
+│      │  if response.tool_calls:  # AI 要求调用工具      │  │
+│      │      │                                            │  │
+│      │      │  for each tool_call:                       │  │
+│      │      │    result = registry.dispatch(            │  │
+│      │      │      name=tool_call.name,                  │  │
+│      │      │      args=tool_call.args                   │  │
+│      │      │    )                                       │  │
+│      │      │    messages.append({                     │  │
+│      │      │      role:"tool",                          │  │
+│      │      │      tool_call_id: xxx,                   │  │
+│      │      │      content: result                      │  │
+│      │      │    })                                      │  │
+│      │      │                                            │  │
+│      │      │  → 回到 Step 1，继续问 AI                  │  │
+│      │      │                                            │  │
+│      │  else:  # AI 不需要工具了，这是最终回复             │  │
+│      │      │                                            │  │
+│      │      → break 循环，返回最终回复给用户             │  │
+│      └──────────────────────────────────────────────────┘  │
+└─────────────────────────────────────────────────────────────┘</code></pre><span class="heading-anchor" id="section-23"></span><h3>7.3 Why Is a Loop Necessary?</h3><p>Complex tasks cannot be completed in one step. For example:</p><pre><code>用户："帮我分析 /project 目录的代码，写一份报告"
+
+AI 第1轮思考："我需要先看看目录里有哪些文件"
+  → tool_call: terminal("ls -la /project")
+
+AI 第2轮思考："好，我看到有 main.py, utils.py, tests/ 等"
+  → tool_call: read_file("main.py")
+  → tool_call: read_file("utils.py")
+
+AI 第3轮思考："文件内容读完了，我来写报告"
+  → 最终回复（无 tool_call，break 出去）</code></pre><span class="heading-anchor" id="section-24"></span><h3>7.4 Loop Control: iteration_budget</h3><p>Set a maximum iteration count to prevent the AI from calling tools forever:</p><pre><code>class IterationBudget:
+    max_total = 90        # 最多 90 次 API 调用
+    remaining = max_total
+
+    def consume(self) -&gt; bool:
+        """返回 False 表示预算耗尽，强制退出"""
+        if self.remaining &lt;= 0:
+            return False
+        self.remaining -= 1
+        return True</code></pre><p><strong>Scenario:</strong> If a tool returns an error, such as a network timeout, the AI may repeatedly retry it. Once the budget is exhausted, execution is forcibly stopped to prevent an infinite loop.</p><span class="heading-anchor" id="section-25"></span><h3>7.5 What If the Context Gets Too Long?</h3><p>When conversation history grows close to the model's context limit, it triggers <strong>context compression</strong>:</p><pre><code>压缩前：
+messages = [系统提示词, 用户问题1, AI回答1, 用户问题2, AI回答2, ... 100轮...]
+
+压缩后：
+messages = [
+    系统提示词,
+    [摘要: 前50轮对话的核心信息],
+    最近10轮完整对话  ← 总是保留最新的对话
+]</code></pre><p>Compression strategy (<code>context_compressor.py</code>):</p><ul><li><strong>Protect recent turns</strong>: Never compress the most recent N conversation turns</li><li><strong>Summarize the middle</strong>: Use an LLM to summarize earlier conversation, retaining key points</li><li><strong>Recount</strong>: Re-estimate tokens after compression to ensure the context remains within limits</li></ul><hr/><span class="heading-anchor" id="section-26"></span><h2>Chapter 8: Prompt Construction (Layered Assembly)</h2><span class="heading-anchor" id="section-27"></span><h3>8.1 Background</h3><p>AI models are general purpose: GPT-4 and Claude do not inherently know who they are. To turn a model into Hermes, a system prompt must provide identity, capabilities, preferences, and context.</p><span class="heading-anchor" id="section-28"></span><h3>8.2 Layered Prompt Assembly</h3><pre><code>┌──────────────────────────────────────────────────────────────┐
+│                  系统提示词（System Prompt）                    │
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 第1层：基础身份层（最底层，几乎不变）                      │ │
+│  │                                                        │ │
+│  │ "You are Hermes, an AI assistant built by Nous Research."│ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            +                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 第2层：能力描述层（工具定义）                              │ │
+│  │                                                        │ │
+│  │ "You have access to the following tools:"              │ │
+│  │ "  - read_file: Read a file with pagination..."         │ │
+│  │ "  - web_search: Search the web..."                     │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            +                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 第3层：用户偏好层（来自记忆系统）                          │ │
+│  │                                                        │ │
+│  │ "User information:"                                     │ │
+│  │ "  - Name: Eva, works at 末龙科技"                       │ │
+│  │ "  - Preferred language: Python"                       │ │
+│  │ "  - Dislikes: Americano coffee"                        │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            +                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 第4层：上下文层（动态信息）                               │ │
+│  │                                                        │ │
+│  │ "Current working directory: /Users/eva/code/project"    │ │
+│  │ "Today's date: 2025-01-15"                              │ │
+│  │ "Current git branch: feature/login"                      │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                            +                                 │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ 第5层：Skills 指令（来自 Skills 系统）                   │ │
+│  │                                                        │ │
+│  │ "For Python debugging tasks, use the debug-python skill"│ │
+│  └────────────────────────────────────────────────────────┘ │
+└──────────────────────────────────────────────────────────────┘</code></pre><span class="heading-anchor" id="section-29"></span><h3>8.3 Responsibilities of prompt_builder.py</h3><p><code>prompt_builder.py</code> dynamically assembles these layers, deciding what to include based on the following factors:</p><pre><code>def _build_system_prompt(self) -&gt; str:
+    layers = []
+
+    # 第1层：基础身份
+    layers.append(self._get_identity_block())
+
+    # 第2层：工具列表（只包含当前启用的工具）
+    layers.append(self._get_tools_block())
+
+    # 第3层：用户偏好（从 memory 读取）
+    if self.memory_enabled:
+        layers.append(self._get_user_preferences_block())
+
+    # 第4层：当前上下文
+    layers.append(self._get_context_block())
+
+    # 第5层：Skills 指令
+    layers.append(self._get_skills_block())
+
+    return "\n\n".join(layers)</code></pre><hr/><span class="heading-anchor" id="section-30"></span><h2>Chapter 9: Memory and Skills</h2><span class="heading-anchor" id="section-31"></span><h3>9.1 Ordinary Memory vs. Skills</h3><pre><code>普通记忆（Memory）         → 存储事实（"用户叫 Eva"）
+Skills                   → 存储经验（"遇到 X 类型问题，用 Y 方法解决"）</code></pre><span class="heading-anchor" id="section-32"></span><h3>9.2 How Memory Works</h3><pre><code>用户说："我下周三要去北京出差"
+
+            │
+            ▼ 记忆工具自动提取
+┌─────────────────────────────────────────────┐
+│  实体提取：                                  │
+│    - 用户：Eva                              │
+│    - 事件：出差                              │
+│    - 地点：北京                              │
+│    - 时间：下周三                            │
+│                                             │
+│  存储到 ~/.hermes/memory/                  │
+│  文件：travel_beijing_eva_2025.md           │
+└──────────────────────┬──────────────────────┘
+                       │
+           下一轮对话开始时
+                       │
+                       ▼ 从 memory/ 读取相关记忆
+           注入系统提示词 → AI 知道"用户要出差去北京"</code></pre><span class="heading-anchor" id="section-33"></span><h3>9.3 How Skills Work</h3><p><strong>Skills are Hermes's most distinctive innovation.</strong> The central idea is:</p><blockquote><p>"Rather than telling an agent how to work, let it learn how to work for itself."</p></blockquote><pre><code>用户让 Hermes 完成一个复杂任务
+  → Hermes 执行完成
+  → Hermes 问自己："我应该把这次经验记成一个 Skill 吗？"
+  → 如果值得记住：
+      创建 ~/.hermes/skills/my-skill/SKILL.md
+      内容包括：
+        - 这个 Skill 在什么场景下触发
+        - 具体操作步骤
+        - 注意事项和陷阱
+  → 下次遇到同类任务：
+      Hermes 自动检索相关 Skill → 加载步骤 → 执行</code></pre><p><strong>Skill storage format (Markdown):</strong></p><pre><code># python-debug
+
+## 触发条件
+当用户描述了 Python 错误、异常、或要求"帮我调试"时触发。
+
+## 操作步骤
+1. 首先让用户提供完整的错误信息
+2. 使用 terminal_tool 运行出错命令，获取完整 stack trace
+3. 分析错误类型：
+   - SyntaxError → 检查拼写和缩进
+   - ImportError → 检查包是否安装、路径是否正确
+   - IndexError  → 检查列表边界
+4. 根据错误类型逐一排查
+5. 提供修复方案和修改后的代码
+
+## 注意事项
+- 不要在看到完整错误前就猜测原因
+- stack trace 从下往上看，找到第一个 ERROR 行</code></pre><span class="heading-anchor" id="section-34"></span><h3>9.4 Retrieving and Invoking Skills</h3><p>When a user describes a task, Hermes automatically:</p><ol><li>1. <strong>Retrieves</strong> — Searches the Skills directory for relevant Skills</li><li>2. <strong>Loads</strong> — Injects the matching Skill's Markdown into the prompt</li><li>3. <strong>Executes</strong> — Follows the Skill's steps</li></ol><hr/><span class="heading-anchor" id="section-35"></span><h2>Chapter 10: Model Abstraction (Provider Pattern)</h2><span class="heading-anchor" id="section-36"></span><h3>10.1 Background</h3><p>Dozens of LLM providers use different API formats and authentication methods. Hard-coding one API would require extensive code changes when switching models.</p><span class="heading-anchor" id="section-37"></span><h3>10.2 Hermes's Solution</h3><p>Hermes code uses only an <strong>OpenAI-compatible format</strong>:</p><pre><code>from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-xxx",
+    base_url="https://api.anthropic.com"  # 可以指向任何兼容端点
+)
+
+# 这个调用格式，可以是：
+#   - Claude（通过 Anthropic 或 OpenRouter）
+#   - GPT-4（原生 OpenAI）
+#   - 任何 OpenRouter 支持的 200+ 模型
+#   - 本地 Ollama 模型
+client.chat.completions.create(
+    model="claude-3-opus",
+    messages=[...],
+    tools=[...]
+)</code></pre><span class="heading-anchor" id="section-38"></span><h3>10.3 Supported Model Types</h3><table><thead><tr><th>Provider</th><th>Format</th><th>Configuration</th></tr></thead><tbody><tr><td>Anthropic (native)</td><td>Anthropic SDK</td><td><code>ANTHROPIC_API_KEY</code></td></tr><tr><td>OpenAI</td><td>OpenAI SDK</td><td><code>OPENAI_API_KEY</code></td></tr><tr><td>OpenRouter</td><td>OpenAI-compatible</td><td><code>OPENROUTER_API_KEY</code></td></tr><tr><td>Xiaomi MiMo</td><td>OpenAI-compatible</td><td><code>MIMO_API_KEY</code></td></tr><tr><td>MiniMax</td><td>OpenAI-compatible</td><td><code>MINIMAX_API_KEY</code></td></tr><tr><td>Local Ollama</td><td>OpenAI-compatible</td><td><code>OLLAMA_BASE_URL</code></td></tr><tr><td>Hugging Face</td><td>Inference API</td><td><code>HF_API_KEY</code></td></tr><tr><td>Custom endpoint</td><td>OpenAI-compatible</td><td>Any base_url</td></tr></tbody></table><span class="heading-anchor" id="section-39"></span><h3>10.4 Switching Models</h3><p>Users need just one command:</p><pre><code>/model claude-3-opus
+/model gpt-4-turbo
+/model openrouter:anthropic/claude-3-opus
+/model ollama:llama3</code></pre><p><code>model_switch.py</code> automatically handles provider detection, API-address resolution, and credential matching, transparently to the user.</p><hr/><span class="heading-anchor" id="section-40"></span><h2>Chapter 11: What Makes the Architecture Good?</h2><span class="heading-anchor" id="section-41"></span><h3>11.1 Four Dimensions for Evaluating Architecture</h3><h4>Maintainability: How much code must change to add a feature?</h4><pre><code>新增一个工具        → 新建 1 个 Python 文件 + 1 行注册代码
+新增一个平台适配器   → 新建 1 个适配器文件
+新增一个模型支持    → 改配置，不改代码
+修复工具 Bug        → 只改该工具文件
+核心重构            → 工具和适配器都不受影响</code></pre><h4>Testability: Can each module be tested independently?</h4><pre><code>工具函数           → ✅ 可以单独写单元测试
+注册表             → ✅ 可以注册假工具后测试分发逻辑
+适配器             → ✅ 可以 Mock 测试，不依赖真实 API
+prompt_builder     → ✅ 可以构造不同配置测试输出</code></pre><h4>Extensibility: Can it run in more environments?</h4><pre><code>终端后端：        本地 / Docker / SSH / Daytona / Modal / Singularity
+消息平台：        Telegram / Discord / Slack / WhatsApp / Signal / Email
+外部扩展：        MCP（Model Context Protocol）支持任意外部工具服务器</code></pre><h4>Flexibility: Can unnecessary parts be disabled?</h4><pre><code>工具集（toolsets）  → 按组启用/禁用
+平台适配器          → 配置文件开关
+记忆系统            → 可关闭（节省资源）
+Skills 系统         → 可关闭</code></pre><span class="heading-anchor" id="section-42"></span><h3>11.2 Comparison with Other Agent Frameworks</h3><table><thead><tr><th>Dimension</th><th>LangChain</th><th>AutoGen</th><th>CrewAI</th><th>Hermes</th></tr></thead><tbody><tr><td>Multiplatform access</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr><tr><td>Persistent memory</td><td>⚠️ Must be built yourself</td><td>❌</td><td>❌</td><td>✅</td></tr><tr><td>Self-evolving Skills</td><td>❌</td><td>❌</td><td>❌</td><td>✅</td></tr><tr><td>Open source</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr><tr><td>Model agnostic</td><td>⚠️</td><td>⚠️</td><td>⚠️</td><td>✅</td></tr><tr><td>Parallel subagents</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr><tr><td>Local deployment</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr></tbody></table><hr/><span class="heading-anchor" id="section-43"></span><h2>Chapter 12: Popular Features Explained</h2><span class="heading-anchor" id="section-44"></span><h3>12.1 Ranked by Usage Frequency</h3><table><thead><tr><th>Rank</th><th>Feature</th><th>Code Location</th><th>Why It Is Popular</th></tr></thead><tbody><tr><td>1</td><td>Terminal command execution</td><td><code>tools/terminal_tool.py</code></td><td>Run commands directly in chat without switching windows</td></tr><tr><td>2</td><td>File reading, writing, and search</td><td><code>tools/file_tools.py</code></td><td>Inspect code and change files without opening an editor</td></tr><tr><td>3</td><td>Web search</td><td><code>tools/web_tools.py</code></td><td>Ask questions and receive results directly</td></tr><tr><td>4</td><td>Scheduled tasks (Cron)</td><td><code>tools/cronjob_tools.py</code></td><td>"Remind me of the meeting every day at 9"—set it once and it keeps working</td></tr><tr><td>5</td><td>Cross-platform messaging</td><td><code>gateway/platforms/*</code></td><td>Send a task on WeChat and continue it in the terminal</td></tr><tr><td>6</td><td>Parallel subagents</td><td><code>tools/delegate_tool.py</code></td><td>"Research three topics at once"—three agents work simultaneously</td></tr><tr><td>7</td><td>Skill evolution</td><td><code>tools/skill_manager_tool.py</code></td><td>The agent learns from mistakes and grows smarter</td></tr><tr><td>8</td><td>Model switching</td><td><code>hermes_cli/model_switch.py</code></td><td>Change models with one command, without technical modifications</td></tr></tbody></table><span class="heading-anchor" id="section-45"></span><h3>12.2 Most Distinctive Feature: Self-evolving Skills</h3><p>This is the biggest distinction between Hermes and all other agent frameworks.</p><p><strong>Traditional agent:</strong></p><pre><code>用户每次遇到同类问题 → 都要重新描述一遍 → Agent 每次重新摸索</code></pre><p><strong>Hermes with Skills:</strong></p><pre><code>第1次遇到问题 → Agent 解决 → 判断值得记住 → 存入 Skill
+第2次遇到同类问题 → Agent 自动找到 Skill → 直接套用经验
+第N次 → Skill 越来越完善，Agent 越来越专业</code></pre><p><strong>Hermes thus achieves real learning—not by updating model parameters, but by accumulating experiential knowledge.</strong></p><span class="heading-anchor" id="section-46"></span><h3>12.3 Most Practical Feature: Multiplatform Unification</h3><p>A real workflow for most users:</p><pre><code>在地铁上（微信）     → 发一条消息给 Hermes："帮我看看代码有没有 Bug"
+到公司（电脑）        → 打开终端 → 继续同一个对话，Hermes 已经记住了任务
+下班路上（Telegram）  → 再发一条："帮我写个报告总结今天的发现"
+回家（躺在床上）      → 语音问 Hermes："今天完成了什么？"</code></pre><p>The entire process is <strong>continuous</strong>, with the same agent, memory system, and accumulated Skills.</p><hr/><span class="heading-anchor" id="section-47"></span><h2>Appendix: Repository Directory Structure</h2><pre><code>hermes-agent/
+│
+├── run_agent.py          ← AI 循环核心（最重要）
+├── model_tools.py         ← 工具发现 + 调用分发
+├── toolsets.py           ← 工具分组配置
+├── cli.py                ← 终端界面入口
+├── hermes_state.py       ← SQLite 会话存储
+│
+├── agent/                ← Agent 内部子系统
+│   ├── prompt_builder.py  ← 系统提示词组装
+│   ├── context_compressor.py ← 上下文压缩
+│   ├── memory_manager.py  ← 记忆管理
+│   └── display.py         ← TUI 显示（动画、格式化）
+│
+├── tools/                ← 工具箱（60+ 工具）
+│   ├── registry.py        ← 工具注册中心
+│   ├── file_tools.py      ← 文件操作
+│   ├── terminal_tool.py   ← 命令执行
+│   ├── web_tools.py       ← 网页搜索
+│   ├── delegate_tool.py   ← 子 Agent
+│   ├── cronjob_tools.py   ← 定时任务
+│   ├── memory_tool.py     ← 记忆管理
+│   ├── skill_manager_tool.py ← Skills 管理
+│   ├── mcp_tool.py        ← MCP 扩展
+│   └── ...
+│
+├── hermes_cli/           ← CLI 子命令系统
+│   ├── main.py            ← hermes 命令入口
+│   ├── commands.py        ← Slash 命令定义
+│   ├── config.py         ← 配置管理
+│   └── model_switch.py   ← 模型切换
+│
+└── gateway/              ← 消息网关
+    ├── run.py             ← Gateway 核心
+    └── platforms/         ← 平台适配器
+        ├── telegram.py
+        ├── discord.py
+        └── ...</code></pre><hr/><span class="heading-anchor" id="section-48"></span><h2>Next Steps</h2><p>After this article, you should understand:</p><pre><code>✅ Hermes 是什么、解决什么问题
+✅ 整体架构图（三层：Gateway → Core → Tools）
+✅ 工具系统为什么用注册表模式
+✅ 消息网关为什么用适配器模式
+✅ AI 循环（ReAct 模式）是怎么工作的
+✅ 提示词分层组装的设计
+✅ 记忆和 Skills 的区别和联系
+✅ 模型抽象层如何实现"换模型不改代码"
+✅ Hermes 火了的核心原因</code></pre><p><strong>Next, you can:</strong></p><ul><li>Read the core loop in <code>run_agent.py</code> (starting with the main loop at line 8092 is recommended)</li><li>Read <code>tools/registry.py</code> to understand the registry implementation</li><li>Read <code>gateway/run.py</code> to understand message dispatch</li><li>Read <code>agent/prompt_builder.py</code> to understand prompt assembly</li><li>Try adding a new tool to Hermes (see <code>tools/todo_tool.py</code>)</li></ul><br/><p></p>
+<hr/><p>Originally published on the Preface Lab WeChat official account: <a href="https://mp.weixin.qq.com/s/EjQqHg__RN8UBNc9iQ8hvQ">Read the original article on WeChat</a>.</p></article><aside class="toc"><h2>On this page</h2><ol><li><a href="#section-0">Contents</a></li><li><a href="#section-1">Chapter 1: What Is Hermes?</a></li><li><a href="#section-2">Chapter 2: Why Has Hermes Taken Off?</a></li><li><a href="#section-3">2.1 The AI Agent Market in 2024–2025</a></li><li><a href="#section-4">2.2 Hermes&#x27;s Core Differentiators</a></li><li><a href="#section-5">2.3 Technical Highlights</a></li><li><a href="#section-6">Chapter 3: System Architecture Overview</a></li><li><a href="#section-7">3.1 Overall Architecture</a></li><li><a href="#section-8">3.2 Data-flow Overview</a></li><li><a href="#section-9">Chapter 4: Core Module Design</a></li><li><a href="#section-10">Chapter 5: The Tool System (Registry Pattern)</a></li><li><a href="#section-11">5.1 Background</a></li><li><a href="#section-12">5.2 Three-layer Architecture</a></li><li><a href="#section-13">5.3 Tool Registration</a></li><li><a href="#section-14">5.4 Tool Discovery</a></li><li><a href="#section-15">5.5 Toolset Grouping</a></li><li><a href="#section-16">Chapter 6: The Messaging Gateway (Adapter Pattern)</a></li><li><a href="#section-17">6.1 Background</a></li><li><a href="#section-18">6.2 Adapter-pattern Architecture</a></li><li><a href="#section-19">6.3 Why Is This Design Good?</a></li><li><a href="#section-20">Chapter 7: The AI Loop (ReAct Pattern)</a></li><li><a href="#section-21">7.1 What Is ReAct?</a></li><li><a href="#section-22">7.2 Hermes&#x27;s AI Loop</a></li><li><a href="#section-23">7.3 Why Is a Loop Necessary?</a></li><li><a href="#section-24">7.4 Loop Control: iteration_budget</a></li><li><a href="#section-25">7.5 What If the Context Gets Too Long?</a></li><li><a href="#section-26">Chapter 8: Prompt Construction (Layered Assembly)</a></li><li><a href="#section-27">8.1 Background</a></li><li><a href="#section-28">8.2 Layered Prompt Assembly</a></li><li><a href="#section-29">8.3 Responsibilities of prompt_builder.py</a></li><li><a href="#section-30">Chapter 9: Memory and Skills</a></li><li><a href="#section-31">9.1 Ordinary Memory vs. Skills</a></li><li><a href="#section-32">9.2 How Memory Works</a></li><li><a href="#section-33">9.3 How Skills Work</a></li><li><a href="#section-34">9.4 Retrieving and Invoking Skills</a></li><li><a href="#section-35">Chapter 10: Model Abstraction (Provider Pattern)</a></li><li><a href="#section-36">10.1 Background</a></li><li><a href="#section-37">10.2 Hermes&#x27;s Solution</a></li><li><a href="#section-38">10.3 Supported Model Types</a></li><li><a href="#section-39">10.4 Switching Models</a></li><li><a href="#section-40">Chapter 11: What Makes the Architecture Good?</a></li><li><a href="#section-41">11.1 Four Dimensions for Evaluating Architecture</a></li><li><a href="#section-42">11.2 Comparison with Other Agent Frameworks</a></li><li><a href="#section-43">Chapter 12: Popular Features Explained</a></li><li><a href="#section-44">12.1 Ranked by Usage Frequency</a></li><li><a href="#section-45">12.2 Most Distinctive Feature: Self-evolving Skills</a></li><li><a href="#section-46">12.3 Most Practical Feature: Multiplatform Unification</a></li><li><a href="#section-47">Appendix: Repository Directory Structure</a></li><li><a href="#section-48">Next Steps</a></li></ol><a class="back-top" href="#main">Back to top ↑</a></aside></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

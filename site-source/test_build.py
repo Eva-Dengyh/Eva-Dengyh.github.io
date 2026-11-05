@@ -40,10 +40,19 @@ class BuildTests(unittest.TestCase):
                 if url:
                     target = self.output / url.strip('/')
                     self.assertTrue(target.exists() or (target / 'index.html').exists(), (file, url))
-    def test_untranslated_article_does_not_link_to_missing_translation(self):
-        html = (self.output / 'zh/posts/ai-agent-notes-2026-03-17/index.html').read_text()
-        self.assertNotIn('/en/posts/ai-agent-notes-2026-03-17/', html)
-        self.assertIn('尚无英文译文', html)
+    def test_all_articles_have_paired_language_routes(self):
+        posts = {locale: {page['id']: page for page in self.pages
+                         if page['kind'] == 'post' and page['locale'] == locale}
+                 for locale in ['zh', 'en']}
+        self.assertEqual(set(posts['zh']), set(posts['en']))
+        self.assertEqual(len(posts['en']), 50)
+        for article_id, chinese in posts['zh'].items():
+            english = posts['en'][article_id]
+            self.assertEqual(chinese['date'], english['date'])
+            for page, counterpart in [(chinese, english), (english, chinese)]:
+                rendered = (self.output / page['path'].strip('/') / 'index.html').read_text()
+                self.assertIn(f'href="{counterpart["path"]}"', rendered)
+                self.assertNotIn('class="unavailable"', rendered)
     def test_metadata_and_no_client_render_requirement(self):
         for file in self.output.rglob('*.html'):
             html = file.read_text()

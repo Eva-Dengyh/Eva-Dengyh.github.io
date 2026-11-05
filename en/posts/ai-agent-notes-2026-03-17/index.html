@@ -1,0 +1,185 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Technical Notes: AI Agent Development—Building Composite Agents from Scratch · Eva Lab</title><meta name="description" content="As AI moves beyond the chat box and starts taking action, agents are becoming a central way to put large langu…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/ai-agent-notes-2026-03-17/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/ai-agent-notes-2026-03-17/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/ai-agent-notes-2026-03-17/">
+<meta property="og:title" content="Technical Notes: AI Agent Development—Building Composite Agents from Scratch"><meta property="og:description" content="As AI moves beyond the chat box and starts taking action, agents are becoming a central way to put large langu…">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/ai-agent-notes-2026-03-17/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Technical Notes: AI Agent Development—Building Composite Agents from Scratch", "datePublished": "2026-03-17", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/ai-agent-notes-2026-03-17/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/ai-agent-notes-2026-03-17/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/ai-agent-notes-2026-03-17/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">AI & agents</p><h1>Technical Notes: AI Agent Development—Building Composite Agents from Scratch</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-03-17">2026.03.17</time><span>·</span><span>9 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><div class="archive-verbatim">As AI moves beyond the chat box and starts taking action, agents are becoming a central way to put large language models to practical use. Drawing on Liang Zhiyuan's book, AI Agent Development: Building Composite Agents from Scratch, this article follows a standard agent-development workflow. It examines architecture, core implementation, and production engineering to explain how to build a composite agent that can perceive, decide, and act.
+
+Image
+Figure: Reasoning and action planning in an agent's decision-making module
+
+Part One: Foundations and Principles
+1.1 Designing an Agent System Architecture
+The central question: What is an agent, and how does it differ from an ordinary large language model?
+
+An AI agent applies the Perception–Cognition–Action (PCA) model to language-based systems. It is no longer simply a chatbot that responds passively; it is an entity capable of making its own decisions.
+
+A typical architecture supports this loop through layers: the foundation-model layer (underlying LLMs, embeddings, and multimodal models) → the agent-capability layer (core logic) → the application-interface layer (user-facing endpoints).
+
+Within the agent-capability layer, five core modules have distinct responsibilities:
+
+Perception: The bridge to the outside world. It converts unstructured natural language, such as a user's vague request, into a structured representation of intent or a JSON object.
+
+Cognition: The agent's brain and reasoning center. It integrates information, reasons logically, chooses strategies, and plans tasks.
+
+Action: The last mile of task completion. It turns cognitive decisions into concrete operations, such as API calls or database queries.
+
+Memory: Essential for multi-turn interaction and continuity of state. It stores user history and intermediate execution state.
+
+Interface: Ensures that the system can run in different environments, including web applications and terminals.
+
+Image
+Figure: The role and connections of perception in an agent architecture
+1.2 Capabilities and Limits of Large Language Models
+What can the model do, and where does it fall short?
+
+1. Core capabilities
+
+The model is the agent's engine. Its reasoning ability sets the ceiling for what the agent can accomplish:
+
+Logical and commonsense reasoning: Using knowledge learned from training data to assess whether a proposition is plausible.
+
+Chain of thought: Producing intermediate steps to work through a complex problem and reach a conclusion.
+
+Conditional and hypothetical reasoning: Simulating “if … then …” situations, which is a foundation for task planning.
+
+2. Limitations and responses: the context window
+The total number of tokens a model can see in a single inference is limited. Handling large amounts of information within that budget requires context-management strategies:
+
+Prompt compression and summarization: Keep the core facts and important excerpts, applying lossy compression to conversation history.
+
+Token-budget allocation: Reserve budgets for the system prompt, user input, and tool descriptions so that no single component crowds out the space needed for reasoning.
+
+Sliding windows and truncation: Feed information in segments and keep only the most recent N conversation turns. Move older turns into long-term memory or discard them.
+
+1.3 Basic Workflows and Task Modeling
+How do you turn a user's request into a task the program can execute?
+
+1. Structured input
+A large language model is fundamentally a conditional generator. A well-designed prompt is the starting point for task modeling. A standard prompt template includes:
+
+System prompt: Defines the role and its boundaries, such as “You are a senior DBA.”
+
+Instruction: States the objective of the current task.
+
+Input content: Supplies the background information needed for the task.
+
+Output format: Requires JSON or specified XML tags so that the program can parse the response.
+
+2. Closing the loop
+An agent does not operate as a one-off question-and-answer exchange. It cycles through “observe state → plan a route → break it into steps → execute and gather feedback.”
+
+Dynamic planning: Embed state labels in the prompt, such as “Task stage: planning,” so the model can decide from the current context whether to continue, branch, or stop.
+
+
+Part Two: Core Components in Detail
+2.1 Technical Details of the Four Main Modules
+How is each module implemented, and which four modules are involved?
+
+1. Perception: From text to structure
+Perception is not just reading; it is parsing. Prompt parsers and helper functions turn natural-language input into structured intent the system can understand.
+
+Key techniques: Identify entities, extract task parameters, and handle multimodal input—for example, use a ViT encoder to convert images into a shared representation.
+
+2. Decision-making (cognition): Breaking down a task chain
+This is the central logic unit. The cognitive process has four steps:
+
+Intent recognition and task classification: Decide whether the task involves querying, generating, or taking an action.
+
+Task decomposition: Break the overall goal into a sequence of smaller steps, represented as a DAG or a linear chain.
+
+Tool selection: Match each step's objective to the most suitable API in the tool library.
+
+Failure anticipation: Identify possible failure paths and prepare fault-tolerance mechanisms in advance.
+
+3. Action: Using tools to affect the world
+The action module includes tool registration, scheduling, and feedback management.
+
+Fault tolerance and retries: External APIs can be unreliable. The action module must catch exceptions. When a tool call fails—for example, because of a timeout or invalid arguments—it should retry automatically or ask the model to regenerate the arguments using the error message (self-correction), rather than simply crashing.
+
+4. Memory: Cooperation between short-term and long-term storage
+
+Short-term memory: Stored in the prompt or in-memory variables. It contains recent conversation turns and intermediate variables, maintaining semantic continuity and resolving references to earlier content.
+
+Long-term memory: Built on a vector database or index, such as Chroma or FAISS.
+
+Writing: Embed important information and store it.
+
+Reading: Retrieve relevant historical knowledge through semantic similarity search (RAG).
+
+Updating: Refresh memory on a rolling basis or prune it according to importance scores.
+
+Image
+Figure: How agent memory evolves by combining general knowledge with agent-specific knowledge
+2.2 Managing the Agent Lifecycle
+The complete process, from startup to shutdown
+
+1. Initialization
+At startup, load model settings such as temperature and maximum tokens, register the tool-function table, and load default system memory.
+
+2. Runtime: State tracking
+
+Session ID: Every session needs a unique identifier.
+
+Resuming from checkpoints: Complex tasks may run for a long time. Periodically persist a resumption state. After an interruption, reconstruct the prompt context and resume execution from the saved state.
+
+3. Termination
+When the task finishes, clean up: release database connections, clear temporary caches, and persist necessary logs so that system resources are reclaimed.
+
+2.3 Integration with External Systems
+How does the agent interact with the outside world?
+
+Agents interact with physical and digital systems through:
+
+API calls: Map user instructions to RESTful HTTP requests. Function calling is commonly used: define a function schema and let the model fill in the arguments.
+
+Database access: Follow a layered flow: semantic parsing → SQL generation → query execution → writing results to memory. Never give an LLM unrestricted direct control over a database.
+
+Filesystems and sandboxes: Run file operations or code execution, such as a code interpreter, in an isolated sandbox—a Docker container or virtual environment—to prevent malicious instructions from damaging the host.
+
+
+Part Three: Engineering Optimization and Safety
+3.1 API Call Design Patterns
+How can model calls be made more efficient?
+
+1. Streaming
+Use streaming responses, such as Server-Sent Events, to address inference latency. Output tokens as they arrive, like a typewriter, so users can see progress before the full answer is ready. Faster time to first output improves the experience.
+
+2. Context caching and concurrency
+Preprocess and cache frequently accessed foundational knowledge. Execute independent subtasks in parallel to improve throughput.
+
+3.2 Safety and Content Control
+How do you stop an agent from producing inappropriate content or taking harmful actions?
+
+1. Sensitive-term filtering: enforcing boundaries
+
+Static defenses: Use the Aho–Corasick automaton for efficient keyword matching against prohibited-term lists in inputs and outputs.
+
+Dynamic defenses: Combine this with semantic-analysis models to catch indirectly expressed prohibited instructions.
+
+2. Reducing hallucinations and assessing trustworthiness
+
+Confidence scoring: Score the probabilities of generated token sequences and intercept low-scoring content.
+
+Consistency checks: Ask the same question using several prompts and compare the answers for consistency.
+
+Citation verification: Require answers to cite knowledge-base sources through RAG. If no source is available, mark the answer as untrusted and hand it over for human review.
+
+
+Closing Thoughts
+These notes summarize the main ideas in the first two chapters of Liang Zhiyuan's AI Agent Development: Building Composite Agents from Scratch. From architecture to practical implementation, I hope they help clarify how agents work internally. For deeper implementation details and code, I recommend reading the original book.
+
+No comments yet</div></article></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

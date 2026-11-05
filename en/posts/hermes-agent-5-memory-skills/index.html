@@ -1,0 +1,389 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Agent Tutorial (5): A Deep Dive into Memory and Skills · Eva Lab</title><meta name="description" content="A Deep Dive into Hermes Memory and Skills Chapter goal: Understand how Hermes remembers information across ses…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/en/posts/hermes-agent-5-memory-skills/"><link rel="alternate" hreflang="en" href="https://eva-dengyh.github.io/en/posts/hermes-agent-5-memory-skills/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/hermes-agent-5-memory-skills/">
+<meta property="og:title" content="Hermes Agent Tutorial (5): A Deep Dive into Memory and Skills"><meta property="og:description" content="A Deep Dive into Hermes Memory and Skills Chapter goal: Understand how Hermes remembers information across ses…">
+<meta property="og:url" content="https://eva-dengyh.github.io/en/posts/hermes-agent-5-memory-skills/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Hermes Agent Tutorial (5): A Deep Dive into Memory and Skills", "datePublished": "2026-04-20", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/en/about/"}, "inLanguage": "en", "mainEntityOfPage": "https://eva-dengyh.github.io/en/posts/hermes-agent-5-memory-skills/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">Skip to content</a>
+    <header class="header"><a class="brand" href="/en/" aria-label="Eva Lab Home"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="Home"><a href="/en/posts/" aria-current=page>Writing</a><a href="/en/projects/" >Projects</a><a href="/en/about/" >About</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/hermes-agent-5-memory-skills/" lang="zh">中文</a><span aria-hidden="true">/</span><a href="/en/posts/hermes-agent-5-memory-skills/" lang="en" aria-current="true">EN</a></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/en/posts/">← Back to writing</a><p class="eyebrow">AI & agents</p><h1>Hermes Agent Tutorial (5): A Deep Dive into Memory and Skills</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-20">2026.04.20</time><span>·</span><span>10 min read</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><h1>A Deep Dive into Hermes Memory and Skills</h1><blockquote><p>Chapter goal: Understand how Hermes remembers information across sessions and how Skills accumulate experience<br/>Prerequisite: Hermes Agent Tutorial (2): System Architecture and Design<br/>Documentation: https://github.com/Eva-Dengyh/AI-Fullstack-Notes</p></blockquote><hr/><span class="heading-anchor" id="section-0"></span><h2>Contents</h2><ul><li>1. What Problem Does Memory Solve?</li><li>2. Memory-system Architecture</li><li>3. How Memories Are Extracted and Stored</li><li>4. How Memories Are Recalled</li><li>5. Skills: Beyond Ordinary Memory</li><li>6. Skill Storage Format</li><li>7. Retrieving and Invoking Skills</li><li>8. How Skills Evolve</li><li>9. Memory vs. Skills: Comparison</li></ul><hr/><span class="heading-anchor" id="section-1"></span><h2>1. What Problem Does Memory Solve?</h2><span class="heading-anchor" id="section-2"></span><h3>1.1 The Fatal Flaw of Standard Agents</h3><p>Most AI agents have a fatal problem: <strong>they remember nothing once a conversation ends.</strong></p><pre><code>第 1 天：
+用户：我是 Eva，在AA科技工作
+Hermes：好的 Eva，我记住了！
+第 1 天结束，关闭 Hermes
+
+第 2 天：
+用户：我叫什么名字？
+Hermes：抱歉，我不知道...
+用户：我在哪工作？
+Hermes：抱歉，我也不记得了...</code></pre><p>This happens because:</p><ul><li>AI models have limited context windows</li><li>Conversation history is truncated when it becomes too long</li><li>Information is completely lost after a session ends</li></ul><span class="heading-anchor" id="section-3"></span><h3>1.2 Hermes's Solution</h3><p>Hermes has a <strong>persistent memory system</strong> that stores important information on disk:</p><pre><code>第 1 天：                               第 2 天：
+用户：我是 Eva，在AA科技工作           │
+      │                                  │
+      ▼ 记忆工具提取并存储               ▼ 从磁盘读取
+~/.hermes/memory/                    ~/.hermes/memory/
+└── user_eva.md                       └── user_eva.md
+     - name: Eva                            - name: Eva
+     - company: AA科技                     - company: AA科技
+                                         │
+                                         ▼ AIAgent 自动加载
+用户：我叫什么名字？                      │
+      │ ◀───────────────────────────── AI 知道 Eva 叫什么</code></pre><hr/><span class="heading-anchor" id="section-4"></span><h2>2. Memory-system Architecture</h2><span class="heading-anchor" id="section-5"></span><h3>2.1 What Components Does It Include?</h3><pre><code>┌─────────────────────────────────────────────────────┐
+│              记忆系统（memory system）                 │
+│                                                       │
+│  ┌──────────────────────────────────────────────┐   │
+│  │  memory_tool.py                              │   │
+│  │  对话内的工具：记忆的读写接口                  │   │
+│  │  用户说"记住 X" → memory_tool 存储           │   │
+│  └──────────────────────────────────────────────┘   │
+│                         +                             │
+│  ┌──────────────────────────────────────────────┐   │
+│  │  memory_manager.py                           │   │
+│  │  记忆的自动管理：什么时候记、记什么、怎么召回   │   │
+│  └──────────────────────────────────────────────┘   │
+│                         +                             │
+│  ┌──────────────────────────────────────────────┐   │
+│  │  ~/.hermes/memory/                           │   │
+│  │  持久化存储：Markdown 文件                    │   │
+│  │  ├── user_eva.md                             │   │
+│  │  ├── preferences.md                          │   │
+│  │  └── facts_travel.md                         │   │
+│  └──────────────────────────────────────────────┘   │
+└─────────────────────────────────────────────────────┘</code></pre><span class="heading-anchor" id="section-6"></span><h3>2.2 Types of Memory</h3><p>Hermes stores several types of memory:</p><pre><code>USER.md        → 用户个人信息（名字、职业、偏好）
+MEMORY.md      → 事实性记忆（重要事件、项目信息）
+preferences.md → 用户偏好（编程语言、咖啡口味）
+skills/*.md    → 经验性记忆（Skills，见下一节）</code></pre><span class="heading-anchor" id="section-7"></span><h3>2.3 Memory Storage Format</h3><p>Memories are stored as <strong>Markdown files</strong> in the <code>~/.hermes/memory/</code> directory:</p><pre><code># user_eva.md
+
+**Name:** Eva
+**Company:** AA科技
+**Role:** AI 全栈开发工程师
+**Timezone:** Asia/Shanghai
+
+**Preferences:**
+- Language: Python
+- Editor: Cursor
+- Coffee: 不喜欢美式咖啡
+
+**Personal:**
+- 喜欢吃麻辣火锅
+- 常用编程语言：Python
+
+---
+Last updated: 2025-03-24</code></pre><hr/><span class="heading-anchor" id="section-8"></span><h2>3. How Memories Are Extracted and Stored</h2><span class="heading-anchor" id="section-9"></span><h3>3.1 Two Ways to Remember</h3><pre><code>主动记忆：用户明确说"记住 X"
+  用户："帮我记住，我喜欢用 Cursor 编辑器"
+    → Hermes 调用 memory_tool 存储
+
+被动记忆：Hermes 自动提取
+  用户说了一段话，Hermes 自动判断"这值得记住"
+    → 自动触发存储逻辑</code></pre><span class="heading-anchor" id="section-10"></span><h3>3.2 Implementing memory_tool</h3><p><code>tools/memory_tool.py</code> provides two core operations:</p><pre><code>def memory_tool(action: str, target: str, content: str = None, old_text: str = None):
+    """
+    action: "add" | "replace" | "remove"
+    target: "user" | "memory" | "preferences"
+    content: 新内容（add/replace 时）
+    old_text: 要替换的旧文本（replace/remove 时）
+    """
+    
+    if action == "add":
+        # 新增记忆
+        filepath = get_memory_path(target)
+        with open(filepath, "a") as f:
+            f.write(f"\n## {datetime.now().date()}\n")
+            f.write(f"{content}\n")
+        
+        return json.dumps({"success": True, "message": "记忆已保存"})
+    
+    elif action == "replace":
+        # 替换记忆
+        filepath = get_memory_path(target)
+        content = read_file(filepath)
+        new_content = content.replace(old_text, content)
+        write_file(filepath, new_content)
+        
+        return json.dumps({"success": True, "message": "记忆已更新"})
+    
+    elif action == "remove":
+        # 删除记忆
+        ...</code></pre><span class="heading-anchor" id="section-11"></span><h3>3.3 Deciding What to Remember</h3><p>Hermes does not remember everything. It intelligently decides what is worth retaining:</p><pre><code># memory_manager.py
+
+def should_remember(text: str) -&gt; bool:
+    """
+    判断用户说的这段话是否值得存储为持久记忆。
+    """
+    # 提取潜在的事实
+    facts = extract_facts(text)  # 命名实体识别
+    
+    # 以下情况值得记住：
+    # 1. 包含个人信息（名字、职业、地点）
+    # 2. 用户明确说"记住..."
+    # 3. 包含偏好（喜欢/讨厌...）
+    # 4. 包含重要约定或计划
+    
+    return len(facts) &gt;= 2  # 至少包含 2 个实体才值得记住</code></pre><hr/><span class="heading-anchor" id="section-12"></span><h2>4. How Memories Are Recalled</h2><span class="heading-anchor" id="section-13"></span><h3>4.1 When Recall Happens</h3><p>Memories are loaded into AIAgent's system prompt <strong>at the start of every conversation</strong>:</p><pre><code>Session 启动
+    │
+    ▼
+memory_manager 读取 ~/.hermes/memory/
+    │
+    ▼
+构建"用户信息块"，注入系统提示词
+    │
+    ▼
+AIAgent 在回答时自动知道这些信息</code></pre><span class="heading-anchor" id="section-14"></span><h3>4.2 Code for Recall and Injection</h3><pre><code># agent/memory_manager.py
+
+def build_memory_context_block(user_id: str) -&gt; str:
+    """
+    读取用户记忆，构建注入给 AIAgent 的文本块。
+    """
+    blocks = []
+    
+    # 读取用户信息
+    user_file = get_memory_path("user")
+    if os.path.exists(user_file):
+        blocks.append(f"## User Information\n{read_file(user_file)}")
+    
+    # 读取一般记忆
+    memory_file = get_memory_path("memory")
+    if os.path.exists(memory_file):
+        blocks.append(f"## Memorable Facts\n{read_file(memory_file)}")
+    
+    # 读取偏好
+    prefs_file = get_memory_path("preferences")
+    if os.path.exists(prefs_file):
+        blocks.append(f"## User Preferences\n{read_file(prefs_file)}")
+    
+    return "\n\n".join(blocks)</code></pre><span class="heading-anchor" id="section-15"></span><h3>4.3 The Result of Memory Injection</h3><p>Memory content is injected when AIAgent assembles its system prompt:</p><pre><code>系统提示词：
+...
+## User Information
+- Name: Eva
+- Company: AA科技
+- Role: AI 全栈开发工程师
+
+## User Preferences
+- Language: Python
+- Editor: Cursor
+- Dislikes: 美式咖啡
+
+## Memorable Facts
+- 喜欢吃麻辣火锅
+- 养过一只叫卷卷的狗
+
+---
+Now you can answer the user knowing this context.</code></pre><hr/><span class="heading-anchor" id="section-16"></span><h2>5. Skills: Beyond Ordinary Memory</h2><span class="heading-anchor" id="section-17"></span><h3>5.1 What Are Skills?</h3><p><strong>Skills = experiential memory.</strong></p><p>Ordinary memory stores <strong>facts</strong> ("Eva likes Python"), while Skills store <strong>experience</strong> ("how I solved a Python bug Eva encountered").</p><pre><code>Memory（事实记忆）:
+  "用户叫 Eva"
+  "用户在AA科技工作"
+  "用户喜欢吃麻辣火锅"
+
+Skills（经验记忆）:
+  "当用户让我调试 Python 时：
+   1. 先让用户提供完整错误信息
+   2. 检查是否是 ImportError / SyntaxError / IndexError
+   3. 按类型排查..."
+
+  "当用户让我帮忙 code review 时：
+   1. 先了解项目结构
+   2. 重点检查安全性（SQL注入、XSS等）
+   3. 检查代码可读性和命名规范..."</code></pre><span class="heading-anchor" id="section-18"></span><h3>5.2 The Core Value of Skills</h3><pre><code>没有 Skills：
+第 1 次：用户让我做 X → 我摸索着做，花了 30 分钟
+第 2 次：用户让我做 X → 我又重新摸索，又花了 30 分钟
+第 N 次：每次都要重新摸索
+
+有 Skills：
+第 1 次：用户让我做 X → 我摸索着做，成功
+       → 我把经验存成 skill_python_debug.md
+第 2 次：用户让我做 X → 找到 skill_python_debug.md
+       → 按步骤做，花了 5 分钟
+第 N 次：Skills 越来越完善，做得越来越快</code></pre><span class="heading-anchor" id="section-19"></span><h3>5.3 Skills vs. Ordinary Tools</h3><table><thead><tr><th>Dimension</th><th>Ordinary Tools</th><th>Skills</th></tr></thead><tbody><tr><td>Creator</td><td>Developers write code</td><td>Agents extract them from their own experience</td></tr><tr><td>Content</td><td>Precise operational steps</td><td>Heuristic guidance from experience</td></tr><tr><td>Trigger</td><td>Called directly by the AI model</td><td>The model decides whether to load them based on the situation</td></tr><tr><td>Granularity</td><td>Precise down to function parameters</td><td>Coarse-grained and organized by scenario</td></tr></tbody></table><hr/><span class="heading-anchor" id="section-20"></span><h2>6. Skill Storage Format</h2><span class="heading-anchor" id="section-21"></span><h3>6.1 Skills Directory Structure</h3><pre><code>~/.hermes/skills/
+├── python-debug/
+│   └── SKILL.md          ← 一个 Skill
+├── code-review/
+│   └── SKILL.md
+├── research/
+│   └── SKILL.md
+└── ...</code></pre><span class="heading-anchor" id="section-22"></span><h3>6.2 SKILL.md Format</h3><p>Each Skill is a Markdown file containing a fixed set of sections:</p><pre><code># python-debug
+
+## name
+python-debug
+
+## description
+当用户描述 Python 错误、异常、或要求"帮我调试"时触发。
+提供系统化的 Python 调试方法。
+
+## trigger
+用户说了以下关键词之一：
+- "报错了"
+- "出错了"
+- "帮我看看"
+- "调试"
+- "traceback"
+- "Exception"
+- Python 相关的错误信息
+
+## steps
+1. **收集信息**
+   - 让用户提供完整的错误信息（traceback）
+   - 如果没有，提供重现步骤
+   
+2. **分析错误类型**
+   - SyntaxError：检查拼写、缩进、括号匹配
+   - ImportError：检查包是否安装、路径是否正确
+   - IndexError / KeyError：检查边界和键名
+   - TypeError：检查变量类型是否匹配
+   - 自定义异常：追踪异常来源
+
+3. **定位问题**
+   - 从 traceback 最底部往上读
+   - 找到第一个 "File" 行，那通常是问题所在
+   - 注意 "in" 后面的函数名
+
+4. **修复与验证**
+   - 给出修复方案
+   - 建议用户验证修复是否成功
+   - 如果失败，继续分析
+
+## notes
+- 不要在看到完整 traceback 前就猜测原因
+- Python 对缩进敏感，Tab 和空格混用是常见错误
+- 虚拟环境没激活也会导致 ImportError
+
+## examples
+用户："Python 报错 ImportError: No module named 'requests'"
+助手：
+1. 检查是否安装了 requests：pip show requests
+2. 如果没有，安装它：pip install requests
+3. 如果安装了但还是报错，检查是否在正确的虚拟环境中
+
+---
+Created: 2025-03-20
+Updated: 2025-03-24
+Times used: 12</code></pre><span class="heading-anchor" id="section-23"></span><h3>6.3 Skill Metadata</h3><p>Besides the main <code>SKILL.md</code> file, many Skills contain additional files:</p><pre><code>~/.hermes/skills/python-debug/
+├── SKILL.md           ← 主文件（必须）
+├── references/        ← 参考资料
+│   └── python-error-codes.md
+├── templates/         ← 代码模板
+│   └── error_handler.py
+└── scripts/           ← 辅助脚本
+    └── analyze_traceback.py</code></pre><hr/><span class="heading-anchor" id="section-24"></span><h2>7. Retrieving and Invoking Skills</h2><span class="heading-anchor" id="section-25"></span><h3>7.1 When Are Skills Retrieved?</h3><p>Skills are retrieved <strong>before every AIAgent decision</strong>:</p><pre><code>用户消息进来
+    │
+    ▼
+检索相关 Skills（基于关键词匹配）
+    │
+    ▼
+找到相关 Skill → 把它的内容注入系统提示词
+    │
+    ▼
+AIAgent 带着 Skill 指导继续工作</code></pre><span class="heading-anchor" id="section-26"></span><h3>7.2 Retrieval Algorithm</h3><pre><code># agent/skill_utils.py
+
+def retrieve_skills(query: str, top_k: int = 3) -&gt; List[Skill]:
+    """
+    根据用户查询检索最相关的 Skills。
+    """
+    # 1. 关键词匹配
+    query_words = set(query.lower().split())
+    
+    scored = []
+    for skill_path in list_skills():
+        skill = load_skill(skill_path)
+        
+        # 计算关键词重叠度
+        trigger_words = set(skill.trigger.lower().split())
+        overlap = len(query_words &amp; trigger_words)
+        
+        # 计算 TF-IDF 相似度（简化版）
+        tfidf_score = compute_tfidf(query, skill.description)
+        
+        # 综合得分
+        final_score = overlap * 2 + tfidf_score
+        scored.append((final_score, skill))
+    
+    # 2. 按得分排序
+    scored.sort(reverse=True)
+    
+    # 3. 返回 Top K
+    return [skill for _, skill in scored[:top_k]]</code></pre><span class="heading-anchor" id="section-27"></span><h3>7.3 The Result of Skill Injection</h3><pre><code>用户："我的 Python 脚本报错了，能帮我看看吗？"
+
+系统提示词中注入：
+---
+## Active Skills
+
+### [python-debug] (relevance: 0.95)
+当用户描述 Python 错误时触发。
+
+Steps:
+1. 收集完整错误信息
+2. 分析错误类型（SyntaxError/ImportError/IndexError/TypeError）
+3. 从 traceback 底部往上看，找到第一个 File 行
+4. 给出修复方案
+
+Notes:
+- 不要猜测，要先看完整 traceback
+- 检查缩进、虚拟环境、包安装
+---
+
+AIAgent 看到用户"报错"，自动加载了 python-debug Skill，
+按照 Skill 里的步骤引导用户提供信息，而不是乱猜。</code></pre><hr/><span class="heading-anchor" id="section-28"></span><h2>8. How Skills Evolve</h2><span class="heading-anchor" id="section-29"></span><h3>8.1 When Evolution Happens</h3><p>Hermes decides whether a new Skill is worth creating <strong>after a task completes</strong>:</p><pre><code>复杂任务完成（耗时 &gt; 5 分钟，或工具调用 &gt; 10 次）
+    │
+    ▼
+Hermes 问自己：
+"这次任务有什么值得以后复用的经验吗？"
+    │
+    ▼
+如果有价值：
+  → Hermes 自动创建/更新对应的 Skill
+  → 增加使用次数计数
+  → 更新 Last Updated 时间</code></pre><span class="heading-anchor" id="section-30"></span><h3>8.2 Code for Automatic Evolution</h3><pre><code># tools/skill_manager_tool.py
+
+async def check_and_evolve_skills(
+    task_description: str,
+    conversation_history: List[dict],
+    outcome: str,
+):
+    """
+    检查是否需要从这次任务中提取新经验。
+    """
+    # 1. 判断任务复杂度
+    if len(conversation_history) &lt; 5:
+        return  # 任务太简单，不需要记录
+    
+    # 2. 判断是否有成功经验
+    if "error" in outcome.lower() or "fail" in outcome.lower():
+        return  # 失败的任务不提取
+    
+    # 3. 让 AI 自己判断是否值得创建 Skill
+    should_create = await ask_llm(
+        f"""
+        用户刚才完成了这个任务：
+        {task_description}
+        
+        这次任务的成功经验是否值得以后复用？
+        如果值得，应该怎么总结成步骤？
+        """
+    )
+    
+    if should_create["worth_saving"]:
+        # 4. 创建或更新 Skill
+        skill = build_skill_from_conversation(
+            task_description,
+            should_create["steps"],
+            should_create["trigger_keywords"],
+        )
+        save_skill(skill)</code></pre><span class="heading-anchor" id="section-31"></span><h3>8.3 A Skill's Lifecycle</h3><pre><code>创建（Create）
+    │
+    ▼
+首次使用（First Use）
+    │
+    ▼
+重复使用（Repeated Use）
+    │
+    ▼
+遇到问题 → 修正 Skill（Refine）
+    │
+    ▼
+越来越完善 → 成为"专家级"Skill</code></pre><hr/><span class="heading-anchor" id="section-32"></span><h2>9. Memory vs. Skills: Comparison</h2><table><thead><tr><th>Dimension</th><th>Memory</th><th>Skills</th></tr></thead><tbody><tr><td><strong>Stored content</strong></td><td>Facts, such as Eva liking hot pot</td><td>Experience, such as how to debug Python</td></tr><tr><td><strong>Creation</strong></td><td>The user says "remember," or information is extracted automatically</td><td>The agent automatically distills experience from tasks</td></tr><tr><td><strong>Purpose</strong></td><td>Help AI know who the user is</td><td>Help AI perform better on similar problems</td></tr><tr><td><strong>Update frequency</strong></td><td>As needed</td><td>Potentially after every relevant task</td></tr><tr><td><strong>File format</strong></td><td><code>~/.hermes/memory/*.md</code></td><td><code>~/.hermes/skills/*/SKILL.md</code></td></tr><tr><td><strong>Recall method</strong></td><td>Injected at the start of every conversation</td><td>Retrieved on demand and injected when matched</td></tr><tr><td><strong>Analogy</strong></td><td>A person's memory</td><td>A person's skills handbook or experience notes</td></tr></tbody></table><hr/><span class="heading-anchor" id="section-33"></span><h2>Summary</h2><p>By now, you should understand:</p><ul><li>The fatal flaw of traditional agents: no persistent memory</li><li>The three-layer architecture of Hermes memory</li><li>The memory storage format: Markdown files</li><li>When and how memory recall happens</li><li>The fundamental difference between Memory and Skills</li><li>The Markdown format for Skills</li><li>Skill retrieval and injection</li><li>How self-evolving Skills automatically extract experience</li><li>A complete comparison of Memory and Skills</li></ul><br/><p></p>
+<hr/><p>Originally published on the Preface Lab WeChat official account: <a href="https://mp.weixin.qq.com/s/p-eCp_ItIZ2QI2P3YiZzjA">Read the original article on WeChat</a>.</p></article><aside class="toc"><h2>On this page</h2><ol><li><a href="#section-0">Contents</a></li><li><a href="#section-1">1. What Problem Does Memory Solve?</a></li><li><a href="#section-2">1.1 The Fatal Flaw of Standard Agents</a></li><li><a href="#section-3">1.2 Hermes&#x27;s Solution</a></li><li><a href="#section-4">2. Memory-system Architecture</a></li><li><a href="#section-5">2.1 What Components Does It Include?</a></li><li><a href="#section-6">2.2 Types of Memory</a></li><li><a href="#section-7">2.3 Memory Storage Format</a></li><li><a href="#section-8">3. How Memories Are Extracted and Stored</a></li><li><a href="#section-9">3.1 Two Ways to Remember</a></li><li><a href="#section-10">3.2 Implementing memory_tool</a></li><li><a href="#section-11">3.3 Deciding What to Remember</a></li><li><a href="#section-12">4. How Memories Are Recalled</a></li><li><a href="#section-13">4.1 When Recall Happens</a></li><li><a href="#section-14">4.2 Code for Recall and Injection</a></li><li><a href="#section-15">4.3 The Result of Memory Injection</a></li><li><a href="#section-16">5. Skills: Beyond Ordinary Memory</a></li><li><a href="#section-17">5.1 What Are Skills?</a></li><li><a href="#section-18">5.2 The Core Value of Skills</a></li><li><a href="#section-19">5.3 Skills vs. Ordinary Tools</a></li><li><a href="#section-20">6. Skill Storage Format</a></li><li><a href="#section-21">6.1 Skills Directory Structure</a></li><li><a href="#section-22">6.2 SKILL.md Format</a></li><li><a href="#section-23">6.3 Skill Metadata</a></li><li><a href="#section-24">7. Retrieving and Invoking Skills</a></li><li><a href="#section-25">7.1 When Are Skills Retrieved?</a></li><li><a href="#section-26">7.2 Retrieval Algorithm</a></li><li><a href="#section-27">7.3 The Result of Skill Injection</a></li><li><a href="#section-28">8. How Skills Evolve</a></li><li><a href="#section-29">8.1 When Evolution Happens</a></li><li><a href="#section-30">8.2 Code for Automatic Evolution</a></li><li><a href="#section-31">8.3 A Skill&#x27;s Lifecycle</a></li><li><a href="#section-32">9. Memory vs. Skills: Comparison</a></li><li><a href="#section-33">Summary</a></li></ol><a class="back-top" href="#main">Back to top ↑</a></aside></div><section class="related"><div class="section-heading"><h2>Recent writing</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="Understanding MFA and Dynamic Verification Codes Through a Login You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a… Developer tools">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/en/posts/mfa-totp-login/">Understanding MFA and Dynamic Verification Codes Through a Login</a>
+<p>You enter your password and click Log In, only for the website to ask you to open your phone&#x27;s authenticator a…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi… Developer tools">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/en/posts/ai-video-model-integration/">I Turned Common AI Video Model Integration Pitfalls into an Open-Source Project</a>
+<p>I recently put together a small project called ModelCap. Its purpose is straightforward: organize common AI vi…</p><span class="post-category">Developer tools</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · Learning, building, and taking notes.</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>
