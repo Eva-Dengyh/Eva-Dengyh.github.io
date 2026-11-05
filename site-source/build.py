@@ -15,6 +15,9 @@ TEXT = {
  'en': dict(wechat='WeChat', home='Home', posts='Writing', projects='Projects', about='About', hello='Hi, I’m Eva.', role='SOFTWARE DEVELOPER / AI APPLICATIONS', latest='Recent writing', all='All writing', topics='Explore topics', archive='Archive', intro='Learning by building. Thinking in writing.', search='Search writing', placeholder='Search titles or keywords…', empty='No matching articles. Try another keyword.', count='articles', clear='All topics', back='Back to writing', toc='On this page', minute='min read', top='Back to top ↑', feed='RSS feed (Chinese)', note='Learning, building, and taking notes.', more='All projects', none='No English translation yet', project_intro='Ideas turned into working software. Open-source tools and projects, built through practice.', about_intro='A little about me and the path so far.', filter='Filter writing', result='matches', excerpt='Read the full note for the details and practical experience.')
 }
 
+ARROW_ICON = '<svg class="link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg>'
+UP_ICON = '<svg class="link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20V4m-7 7 7-7 7 7"/></svg>'
+
 def plain(html):
     return re.sub(r'\s+', ' ', unescape(re.sub('<[^>]*>', ' ', html))).strip()
 
@@ -75,7 +78,7 @@ def shell(locale, path, title, description, body, section, available, schema=Non
 <link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
 <script src="/assets/site.js" defer></script>{'<script type="application/ld+json">'+data+'</script>' if schema else ''}</head>
 <body><div class="site">{header(locale,section,pairs)}<main id="main">{body}</main>
-<footer class="footer"><span>© {CONFIG['year']} Eva Lab<span class="footer-note"> · {TEXT[locale]['note']}</span></span><div><a href="{CONFIG['github']}">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>'''
+<footer class="footer"><span>© {CONFIG['year']} Eva Lab<span class="footer-note"> · {TEXT[locale]['note']}</span></span><div><a href="{CONFIG['github']}">GitHub {ARROW_ICON}</a><a href="/rss.xml">RSS {ARROW_ICON}</a><a href="#main">{UP_ICON} Top</a></div></footer></div></body></html>'''
 
 def post_rows(posts, locale, limit=None):
     result = []
@@ -84,7 +87,7 @@ def post_rows(posts, locale, limit=None):
         search = escape(page['title']+' '+excerpt(page)+' '+CONFIG['topics'][category][locale], quote=True)
         result.append(f'''<article class="post-row" data-post data-topic="{category}" data-year="{page['date'][:4]}" data-search="{search}">
 <time datetime="{page['date']}">{page['date'].replace('-','.')}</time><div><a class="post-title" href="{page['path']}">{escape(page['title'])}</a>
-<p>{escape(excerpt(page))}</p><span class="post-category">{CONFIG['topics'][category][locale]}</span></div><span class="row-arrow" aria-hidden="true">↗</span></article>''')
+<p>{escape(excerpt(page))}</p><span class="post-category">{CONFIG['topics'][category][locale]}</span></div><span class="row-arrow" aria-hidden="true">{ARROW_ICON}</span></article>''')
     return ''.join(result)
 
 def sidebar(posts, locale):
@@ -95,20 +98,20 @@ def sidebar(posts, locale):
         if count:
             buttons += f'<button data-topic-filter="{key}" aria-pressed="false">{CONFIG["topics"][key][locale]}<span>{count:02}</span></button>'
     years = sorted({p['date'][:4] for p in posts}, reverse=True)
-    archive = ''.join(f'<a href="/{locale}/posts/?year={year}">{year}<span>↗</span></a>' for year in years)
-    return f'''<aside class="sidebar"><section><h3>{text['topics']}</h3><div class="topic-list">{buttons}</div></section><section><h3>{text['archive']}</h3>{archive}</section><section class="sidebar-note"><span class="mono">README.md</span><p>{text['intro']}</p><a href="/{locale}/">{text['about']} ↗</a></section></aside>'''
+    archive = ''.join(f'<a href="/{locale}/posts/?year={year}">{year}<span>{ARROW_ICON}</span></a>' for year in years)
+    return f'''<aside class="sidebar"><section><h3>{text['topics']}</h3><div class="topic-list">{buttons}</div></section><section><h3>{text['archive']}</h3>{archive}</section><section class="sidebar-note"><span class="mono">README.md</span><p>{text['intro']}</p><a href="/{locale}/">{text['about']} {ARROW_ICON}</a></section></aside>'''
 
 def profile_home(page, locale):
     text = TEXT[locale]
     return f'''<section class="page-intro"><p class="eyebrow">ABOUT / EVA</p><h1>{text['hello']}</h1>
-<div class="social"><a href="/{locale}/posts/">{text['posts']} ↗</a><a href="/{locale}/projects/">{text['projects']} ↗</a><a href="{CONFIG['github']}">GitHub ↗</a><a href="{CONFIG['wechat']}">{text['wechat']} ↗</a></div></section>
+<div class="social"><a href="/{locale}/posts/">{text['posts']} {ARROW_ICON}</a><a href="/{locale}/projects/">{text['projects']} {ARROW_ICON}</a><a href="{CONFIG['github']}">GitHub {ARROW_ICON}</a><a href="{CONFIG['wechat']}">{text['wechat']} {ARROW_ICON}</a></div></section>
 <div class="prose about-content">{page['html']}</div>'''
 
 def listing(posts, locale):
     text = TEXT[locale]
     intro = f'<section class="page-intro"><p class="eyebrow">WRITING / ARCHIVE</p><h1>{text["all"]}<span class="total">{len(posts):02}</span></h1><p>{text["intro"]}</p></section>'
     search = f'''<div class="search-wrap"><label for="search" class="sr-only">{text['search']}</label><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="{text['placeholder']}" autocomplete="off"><span class="search-hint" aria-hidden="true">/</span></div>'''
-    return f'''{intro}<section class="writing" data-listing data-preview-limit="0"><div class="writing-main"><div class="section-heading"><h2>{text['posts']}<span class="total">{len(posts):02}</span></h2><a href="/{locale}/posts/">{text['all']} ↗</a></div>
+    return f'''{intro}<section class="writing" data-listing data-preview-limit="0"><div class="writing-main"><div class="section-heading"><h2>{text['posts']}<span class="total">{len(posts):02}</span></h2><a href="/{locale}/posts/">{text['all']} {ARROW_ICON}</a></div>
 {search}<p id="result-count" class="result-count" aria-live="polite" data-unit="{text['result']}"></p><div class="post-list">{post_rows(posts,locale)}</div><p id="empty" hidden>{text['empty']}</p></div>{sidebar(posts,locale)}</section>'''
 
 def article(page, locale, all_posts):
