@@ -1,0 +1,78 @@
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>知识图谱入门：从一张关系网到 AI 知识底座 · Eva Lab</title><meta name="description" content="导读 第一次听到&quot;知识图谱&quot;，可能会有几个直观的疑问：知识怎么会是一张图？它跟数据库有什么区别？和现在火热的大模型、RAG、智能问答的关系是什么？ 其实可以这样想象：知识图谱做的事情，就是把现实世界里的事物以及它们之间的…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/zh/posts/knowledge-graph-introduction/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/knowledge-graph-introduction/">
+<meta property="og:title" content="知识图谱入门：从一张关系网到 AI 知识底座"><meta property="og:description" content="导读 第一次听到&quot;知识图谱&quot;，可能会有几个直观的疑问：知识怎么会是一张图？它跟数据库有什么区别？和现在火热的大模型、RAG、智能问答的关系是什么？ 其实可以这样想象：知识图谱做的事情，就是把现实世界里的事物以及它们之间的…">
+<meta property="og:url" content="https://eva-dengyh.github.io/zh/posts/knowledge-graph-introduction/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "知识图谱入门：从一张关系网到 AI 知识底座", "datePublished": "2026-05-26", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/zh/about/"}, "inLanguage": "zh", "mainEntityOfPage": "https://eva-dengyh.github.io/zh/posts/knowledge-graph-introduction/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">跳到正文</a>
+    <header class="header"><a class="brand" href="/zh/" aria-label="Eva Lab 首页"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="首页"><a href="/zh/posts/" aria-current=page>文章</a><a href="/zh/projects/" >项目</a><a href="/zh/about/" >关于</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/knowledge-graph-introduction/" lang="zh" aria-current="true">中文</a><span aria-hidden="true">/</span><span class="unavailable" title="尚无英文译文">EN</span></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/zh/posts/">← 返回文章列表</a><p class="eyebrow">开发工具</p><h1>知识图谱入门：从一张关系网到 AI 知识底座</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-05-26">2026.05.26</time><span>·</span><span>11 分钟阅读</span><span class="translation-note">尚无英文译文</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><span class="heading-anchor" id="section-0"></span><h2>导读</h2><p>第一次听到"知识图谱"，可能会有几个直观的疑问：知识怎么会是一张图？它跟数据库有什么区别？和现在火热的大模型、RAG、智能问答的关系是什么？</p><p>其实可以这样想象：知识图谱做的事情，就是把现实世界里的事物以及它们之间的关系，用计算机能理解、能查询、能推理的方式组织起来。</p><p>比如这些关系：</p><pre><code>乔布斯 → 创立 → 苹果公司
+苹果公司 → 发布 → iPhone
+iPhone → 属于 → 智能手机
+苹果公司 → 总部位于 → 库比蒂诺</code></pre><p>单看一条，它像是一个事实。把很多条连起来，就形成了一张关系网。</p><p>这张网的价值不仅在于展示，更重要的是机器可以利用它：沿着关系路径查找答案、判断两个对象是否相关、解释推荐结果、发现潜在风险链条，或者为大模型提供更坚实的上下文。</p><p>所以知识图谱的本质不是"画一张漂亮的图"，而是<strong>把散落在表格、文档、网页、系统和人脑里的知识关系，变成计算机能理解和复用的结构</strong>。</p><span class="heading-anchor" id="section-1"></span><h2>一、从一个搜索问题谈起</h2><p>假设你问搜索引擎一个问题：</p><pre><code>苹果创始人是谁？</code></pre><p>这里"苹果"有多个含义——可能是水果，可能是苹果公司，也可能是某个项目、品牌或人的昵称。</p><p><strong>传统关键词搜索的做法</strong></p><p>系统看到"苹果""创始人"这些词，就去匹配包含这些词的网页，按相关性排序。结果好不好，全靠网页的热度和外链数量。</p><p><strong>基于知识图谱的做法</strong></p><p>系统先确认：你说的"苹果"大概率是"苹果公司"这个实体。然后直接从图谱里查出：</p><pre><code>苹果公司 → 创始人 → 史蒂夫·乔布斯
+苹果公司 → 创始人 → 史蒂夫·沃兹尼亚克
+苹果公司 → 创始人 → 罗纳德·韦恩</code></pre><p>区别在哪里？</p><ul><li>关键词搜索：在猜"哪个网页看起来最像答案"</li><li>知识图谱：在使用一组明确的结构化事实</li></ul><p>这就是知识图谱相比传统文本搜索的核心优势：<strong>不只找"包含什么词"，而是理解"这个词指的是谁，它和谁有什么关系"</strong>。</p><img alt="图片" decoding="async" loading="lazy" src="/assets/posts/knowledge-graph-introduction/image-004.png"/><span class="heading-anchor" id="section-2"></span><h2>二、知识图谱到底是什么</h2><p><strong>一句话定义</strong>：知识图谱是用"实体"和"关系"来组织知识的图结构。</p><p>这里有三个关键要素：</p><p><strong>实体</strong><br/>现实世界中可被识别的对象。一个人、一家公司、一本书、一个城市、一种疾病、一款产品、一个系统接口，都可以是实体。</p><p><strong>关系</strong><br/>实体之间的连接。比如：</p><pre><code>人 → 任职于 → 公司
+公司 → 位于 → 城市
+疾病 → 表现为 → 症状
+药物 → 治疗 → 疾病
+项目 → 依赖 → 系统</code></pre><p><strong>图结构</strong><br/>实体作为节点，关系作为边，连接成一张可查询的网。</p><span class="heading-anchor" id="section-3"></span><h3>知识图谱的组成部分</h3><table><thead><tr><th>要素</th><th>含义</th><th>例子</th></tr></thead><tbody><tr><td><strong>实体</strong></td><td>可识别的对象</td><td>苹果公司、iPhone、乔布斯</td></tr><tr><td><strong>关系</strong></td><td>对象间的连接</td><td>创立、发布、属于、位于</td></tr><tr><td><strong>属性</strong></td><td>对象自身的特征</td><td>成立年份、总部地址、价格、出生日期</td></tr><tr><td><strong>类型</strong></td><td>实体属于哪一类</td><td>公司、人物、产品、城市</td></tr><tr><td><strong>本体</strong></td><td>概念和关系的规则定义</td><td>公司可以有创始人，产品可以属于公司</td></tr><tr><td><strong>来源</strong></td><td>事实的出处</td><td>官网、数据库、文档、人工审核</td></tr><tr><td><strong>置信度</strong></td><td>事实的可信程度</td><td>0.95、已审核、待确认</td></tr></tbody></table><span class="heading-anchor" id="section-4"></span><h3>知识的基本形式：三元组</h3><p>知识图谱最常见的表达是"三元组"（主-谓-宾）：</p><pre><code>乔布斯 → 创立 → 苹果公司
+苹果公司 → 发布 → iPhone
+北京 → 是首都 → 中国
+阿司匹林 → 可缓解 → 疼痛</code></pre><p>一条三元组记录一个事实。众多三元组连接起来，就构成了知识图谱。</p><span class="heading-anchor" id="section-5"></span><h2>三、为什么不只用数据库</h2><p>很多人会问：这些数据不能直接存进数据库吗？</p><p>当然可以。关系型数据库在存储和管理结构化数据方面做得很好。用户表、订单表、商品表、员工表等都能轻松管理。</p><p>但问题在于数据库的设计哲学：<strong>它优化的是"把数据按表存好"，而知识图谱优化的是"把关系表达清楚"</strong>。</p><span class="heading-anchor" id="section-6"></span><h3>一个金融风控的例子</h3><p>风控系统可能有多张表：用户表、设备表、银行卡表、手机号表、交易表、商户表。</p><p>单独看任何一张表，每个用户看起来都很正常。</p><p>但把关系连起来，你会看到隐藏的风险：</p><pre><code>用户A → 使用 → 设备X
+用户B → 使用 → 设备X
+用户C → 使用 → 设备X
+
+用户A → 绑定 → 银行卡Y
+用户B → 收款至 → 银行卡Y
+
+用户A、B、C → 登录自 → 同一IP地址</code></pre><p>风险不在某一条数据里，而<strong>在于这组关系构成的模式</strong>。</p><p>数据库可以通过 JOIN 查询关系，但当关系类型多、跳转层数深、数据来源杂时，表结构会变得复杂难维护。知识图谱则更擅长回答：</p><ul><li>谁和谁有关系？</li><li>他们通过什么路径相连？</li><li>这条路径意味着什么？</li><li>这组关系是否构成风险、机会或依赖？</li></ul><blockquote><p>知识图谱不是替代数据库，而是在数据库和应用之间增加一层"关系理解能力"。</p></blockquote><span class="heading-anchor" id="section-7"></span><h2>四、知识图谱与搜索、向量库的差异</h2><p>现代 AI 应用里，搜索引擎、向量数据库、知识图谱都常见到。它们各有所长：</p><pre><code>数据库 → 擅长存储精确的记录
+搜索引擎 → 擅长找包含关键词的文本
+向量数据库 → 擅长找语义相似的内容
+知识图谱 → 擅长表达实体之间的关系</code></pre><span class="heading-anchor" id="section-8"></span><h3>企业知识库的例子</h3><p>用户问：<code>上次 Chat 接口为什么重构？</code></p><p><strong>关键词搜索</strong>的结果：找到包含"Chat""接口""重构"的文档。</p><p><strong>向量检索</strong>的结果：找到语义相近的段落（如"接口改造""链路调整"）。</p><p><strong>知识图谱</strong>的结果：不仅找到文档，还能展现：</p><ul><li>Chat 接口属于哪个系统</li><li>它依赖哪些服务</li><li>历史上出现过什么错误</li><li>哪些日志、测试、会议记录提到过它</li><li>谁负责过这条链路</li><li>重构影响了哪些上下游系统</li></ul><p>知识图谱的优势是<strong>沿着实体关系组织上下文</strong>，而不仅仅是查找"相似内容"。</p><span class="heading-anchor" id="section-9"></span><h2>五、知识图谱的核心概念</h2><p>入门知识图谱，不需要一开始就深入 RDF、OWL、SPARQL 这些技术。先把以下几个概念理清楚就行。</p><span class="heading-anchor" id="section-10"></span><h3>1. 实体：身份很关键</h3><p>实体是图谱的基本节点。难点不在识别一个词，而在<strong>确认它到底指向哪个对象</strong>。</p><pre><code>"苹果" → 水果？苹果公司？内部项目代号？
+"张伟" → 销售同事？客户联系人？
+"Chat" → 页面组件？后端接口？产品模块？</code></pre><p>搞错实体身份，后面的所有关系都会出错。所以图谱的第一项关键任务是：<strong>实体识别和实体消歧</strong>。</p><span class="heading-anchor" id="section-11"></span><h3>2. 关系：不是所有连线都有意义</h3><p>关系是图谱的灵魂。但不能随意连接两个实体。一条有意义的关系必须能回答：</p><ul><li>它表示什么语义？</li><li>有方向吗？</li><li>有时间范围吗？</li><li>来源是什么？</li><li>能被业务解释吗？</li></ul><p>比如这个关系链：</p><pre><code>员工A → 负责 → 项目B
+项目B → 依赖 → 系统C
+系统C → 出现 → 错误D
+错误D → 记录于 → 日志E</code></pre><p>这条路径能清楚地解释"为什么项目B受影响"。如果只是随便画一条"相关"的边，业务价值就大打折扣。</p><span class="heading-anchor" id="section-12"></span><h3>3. 本体：给图谱定规则</h3><p>本体可以理解为"知识图谱的架构设计图"。它规定了：</p><ul><li>有哪些实体类型？</li><li>有哪些关系类型？</li><li>哪些关系是合法的？（比如"人"可以有"出生地"，但"公司"不能有"出生地"）</li><li>哪些属性是必填的？</li><li>实体之间的层级关系是什么？</li></ul><p>没有本体约束，图谱容易变成一堆杂乱的连线。</p><span class="heading-anchor" id="section-13"></span><h3>4. 来源和置信度：可追溯很重要</h3><p>生产环境下的知识图谱，必须记录<strong>每条事实的来源</strong>。</p><pre><code>来自官网 → 高信任
+来自数据库 → 中高信任
+来自模型自动抽取 → 低信任
+来自人工审核 → 最高信任</code></pre><p>特别是在金融、医疗、法律这样的场景，不能只说"图谱里有这条关系"，还要能说清楚：</p><ul><li>这条关系从哪来？</li><li>什么时候产生的？</li><li>谁审核过？</li><li>现在还有效吗？</li><li>错了怎么回滚</li><li><img alt="图片" decoding="async" loading="lazy" src="/assets/posts/knowledge-graph-introduction/image-012.png"/></li></ul><br/><span class="heading-anchor" id="section-14"></span><h2>六、知识图谱是怎样构建的</h2><p>知识图谱不是手工一条条画出来的。实际的构建流程是：</p><pre><code>确定业务问题
+  ↓
+设计 schema / 本体
+  ↓
+接入数据源
+  ↓
+抽取实体和关系
+  ↓
+实体链接与消歧
+  ↓
+融合多源数据
+  ↓
+质量校验
+  ↓
+存储和查询
+  ↓
+接入应用
+  ↓
+持续迭代更新</code></pre><span class="heading-anchor" id="section-15"></span><h3>第一步：明确业务目标</h3><p>不要一开始就说"我要建企业级知识图谱"。更有效的做法是问自己：</p><ul><li>它需要回答什么具体问题？</li><li>帮助客服更快回答产品问题吗？</li><li>帮助风控识别欺诈团伙吗？</li><li>帮助研发厘清系统依赖吗？</li><li>帮助医生查找疾病和用药的关系吗？</li></ul><p><strong>目标越具体，图谱越容易落地</strong>。</p><span class="heading-anchor" id="section-16"></span><h3>第二步：设计 Schema</h3><p>Schema 是图谱的骨架。以企业研发知识为例，第一版可以简单设定：</p><p><strong>实体类型</strong>：项目、系统、接口、文档、人员、错误、测试记录</p><p><strong>关系类型</strong>：</p><pre><code>人员 → 负责 → 项目
+项目 → 包含 → 系统
+系统 → 提供 → 接口
+接口 → 出现 → 错误
+错误 → 记录于 → 日志
+文档 → 描述 → 系统
+测试记录 → 验证 → 接口</code></pre><p><strong>关键原则</strong>：第一版不追求大而全。把核心实体和核心关系连准，比堆砌很多类型更重要。</p><span class="heading-anchor" id="section-17"></span><h3>第三步：从数据里抽取知识</h3><p>数据源通常有三类：</p><p><strong>结构化</strong>：数据库、表格、API</p><ul><li>可以通过规则直接映射进图谱</li></ul><p><strong>半结构化</strong>：网页、JSON、配置文件</p><ul><li>需要解析和转换</li></ul><p><strong>非结构化</strong>：文档、邮件、工单、会议纪要</p><ul><li>需要用NLP或大模型来抽取实体和关系</li></ul><p><strong>重要提醒</strong>：大模型抽取出来的候选知识，不能直接入库。还要经过规则验证、来源标记、置信度评分和人工审核。</p><span class="heading-anchor" id="section-18"></span><h3>第四步：实体消歧和融合</h3><p>这一步常被低估，但很关键。</p><p>不同系统里同一对象可能有不同名字：</p><pre><code>IBM = International Business Machines = 国际商业机器公司</code></pre><p>同一名字也可能指向不同对象：</p><pre><code>"苹果" → 水果？苹果公司？内部项目？
+"张伟" → 销售员工？客户？供应商？</code></pre><p>处理不好会导致：</p><ul><li>错误合并：把无关事实绑在一起</li><li>错误拆分：同一对象的知识碎掉</li></ul><p>所以实体消歧和融合是图谱质量的关键。</p><span class="heading-anchor" id="section-19"></span><h3>第五步：接入应用和持续迭代</h3><p>知识图谱建完只是开始。必须接入真实应用：搜索、问答、推荐、风控、数据治理。</p><p>然后通过应用反馈不断修正：</p><ul><li>用户点了什么？</li><li>答案被采纳了吗？</li><li>哪些关系经常查不到？</li><li>哪些事实过期了？</li><li>哪些实体被重复创建？</li></ul><p>这些反馈驱动图谱的迭代优化。</p><span class="heading-anchor" id="section-20"></span><h2>七、知识图谱的应用场景</h2><p>知识图谱最适合"<strong>关系复杂、需要解释、数据多源</strong>"的场景。</p><span class="heading-anchor" id="section-21"></span><h3>搜索</h3><p>Google 在 2012 年推出 Knowledge Graph 时，提出了经典理念：</p><blockquote><p><strong>Things, not strings</strong>（理解事物，而不只是字符串）</p></blockquote><p>当搜索一个人物、地点、电影、公司时，搜索引擎不仅返回网页，还能展示结构化的人物信息、相关实体、历史事件。这背后就是知识图谱。</p><span class="heading-anchor" id="section-22"></span><h3>推荐系统</h3><p>电商推荐不只是"买了 A 的人也买了 B"。知识图谱让推荐能理解：</p><ul><li>商品属于哪个类目</li><li>品牌间的关系</li><li>用户的场景偏好</li><li>配件和设备的兼容性</li></ul><p>有了这些关系，推荐结果更容易解释和信任。</p><span class="heading-anchor" id="section-23"></span><h3>金融风控</h3><p>风控图谱连接用户、账户、设备、银行卡、手机号、IP、商户和交易。</p><p>它擅长发现隐藏在多跳关系里的团伙欺诈：多个账户共享设备、共用收款卡、从相同IP登录、流向同一商户——这种模式用图结构更容易识别。</p><span class="heading-anchor" id="section-24"></span><h3>医疗医药</h3><p>医疗知识天然适合图谱：疾病、症状、药物、基因、检查、指南、禁忌之间都有明确关系。</p><p>但医疗图谱对<strong>来源和审核要求极高</strong>，不能把模型自动生成的内容当作医学事实。</p><span class="heading-anchor" id="section-25"></span><h3>企业知识管理</h3><p>这是最值得关注的新方向。</p><p>企业里大量知识散落在文档、代码、工单、聊天记录、会议纪要和系统配置里。知识图谱可以把项目、系统、接口、人员、文档、决策和故障联系起来。</p><p>员工问一个问题时，系统不只找相似文档，而是<strong>沿着企业知识网络组织答案</strong>。</p><span class="heading-anchor" id="section-26"></span><h3>大模型和 GraphRAG</h3><p>大模型时代为知识图谱打开了新的应用口。</p><p><strong>传统 RAG 流程</strong>：</p><pre><code>文档切块 → 向量检索 → 召回文本 → 大模型生成答案</code></pre><p>这种方式对单文档问题很有效，但遇到跨多文档、多实体、多跳关系的问题时，容易漏掉关键上下文。</p><p><strong>GraphRAG 思路</strong>：</p><pre><code>识别实体和关系
+  → 构建图结构
+  → 沿着图谱找相关上下文
+  → 交给大模型生成答案</code></pre><p>知识图谱不替代大模型，而是<strong>给大模型提供更稳固的事实骨架</strong>。</p><span class="heading-anchor" id="section-27"></span><h2>八、总结</h2><p>知识图谱可以用很简单的话理解：</p><blockquote><p><strong>一张机器能读懂的事实关系网</strong></p></blockquote><p>但真正深入后会发现，它不只是"实体连关系"。还要处理实体身份、关系语义、本体约束、来源跟踪、置信度管理、权限控制、版本更新和应用闭环。</p><p>所以<strong>知识图谱的真正价值</strong>，不在于把数据画成一张网，而在于<strong>把原本散落、隐含、难以复用的关系显式化</strong>。</p><p>在搜索时代，它帮助系统从"字符串匹配"走向"实体理解"。</p><p>在企业里，它帮助业务从"孤立数据"走向"关系洞察"。</p><p>在大模型时代，它帮助 AI 从"会生成文本"走向"能基于结构化上下文推理"。</p><span class="heading-anchor" id="section-28"></span><h3>判断一个场景是否需要知识图谱</h3><blockquote><p>当问题的关键不在单条数据，而在<strong>对象之间的关系</strong>；当答案不仅要给结果，还要能<strong>解释来源和路径</strong>——知识图谱就开始有价值。</p></blockquote><p> </p><p>参考链接：</p><p>https://github.com/husthuke/awesome-knowledge-graph</p><p></p>
+<hr><p>本文原载于公众号 Preface Lab：<a href="https://mp.weixin.qq.com/s/K2WMjgmFqjsGbjh4eyLsWA">阅读公众号原文</a>。</p></article><aside class="toc"><h2>本文目录</h2><ol><li><a href="#section-0">导读</a></li><li><a href="#section-1">一、从一个搜索问题谈起</a></li><li><a href="#section-2">二、知识图谱到底是什么</a></li><li><a href="#section-3">知识图谱的组成部分</a></li><li><a href="#section-4">知识的基本形式：三元组</a></li><li><a href="#section-5">三、为什么不只用数据库</a></li><li><a href="#section-6">一个金融风控的例子</a></li><li><a href="#section-7">四、知识图谱与搜索、向量库的差异</a></li><li><a href="#section-8">企业知识库的例子</a></li><li><a href="#section-9">五、知识图谱的核心概念</a></li><li><a href="#section-10">1. 实体：身份很关键</a></li><li><a href="#section-11">2. 关系：不是所有连线都有意义</a></li><li><a href="#section-12">3. 本体：给图谱定规则</a></li><li><a href="#section-13">4. 来源和置信度：可追溯很重要</a></li><li><a href="#section-14">六、知识图谱是怎样构建的</a></li><li><a href="#section-15">第一步：明确业务目标</a></li><li><a href="#section-16">第二步：设计 Schema</a></li><li><a href="#section-17">第三步：从数据里抽取知识</a></li><li><a href="#section-18">第四步：实体消歧和融合</a></li><li><a href="#section-19">第五步：接入应用和持续迭代</a></li><li><a href="#section-20">七、知识图谱的应用场景</a></li><li><a href="#section-21">搜索</a></li><li><a href="#section-22">推荐系统</a></li><li><a href="#section-23">金融风控</a></li><li><a href="#section-24">医疗医药</a></li><li><a href="#section-25">企业知识管理</a></li><li><a href="#section-26">大模型和 GraphRAG</a></li><li><a href="#section-27">八、总结</a></li><li><a href="#section-28">判断一个场景是否需要知识图谱</a></li></ol><a class="back-top" href="#main">回到顶部 ↑</a></aside></div><section class="related"><div class="section-heading"><h2>最近的文章</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="从一次登录开始，弄懂 MFA与动态验证码 输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统… 开发工具">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/zh/posts/mfa-totp-login/">从一次登录开始，弄懂 MFA与动态验证码</a>
+<p>输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目 最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用… 开发工具">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/zh/posts/ai-video-model-integration/">我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目</a>
+<p>最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · 学习、构建，持续记录。</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

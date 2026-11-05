@@ -60,13 +60,13 @@ class BuildTests(unittest.TestCase):
     def test_feed_preserves_publication_dates(self):
         feed = ET.parse(self.output / 'rss.xml')
         items = feed.findall('./channel/item')
-        self.assertEqual(len(items), 14)
-        self.assertEqual(items[0].findtext('pubDate'), 'Tue, 17 Mar 2026 00:00:00 GMT')
+        self.assertEqual(len(items), 50)
+        self.assertEqual(items[0].findtext('pubDate'), 'Fri, 09 Oct 2026 00:00:00 GMT')
     def test_recent_article_links_are_in_date_order(self):
         html = (self.output / 'zh/posts/b2044db9-e74c-4719-b0f7-a62b8062b5d5/index.html').read_text()
         related = html.split('<section class="related">')[1]
         dates = re.findall(r'<time datetime="([^"]+)"', related)
-        self.assertEqual(dates, ['2026-03-17', '2026-03-10'])
+        self.assertEqual(dates, ['2026-10-09', '2026-09-15'])
     def test_topic_classification(self):
         self.assertEqual(self.build.topic('RAG 实战'), 'ai')
         self.assertEqual(self.build.topic('Ubuntu Redis'), 'backend')

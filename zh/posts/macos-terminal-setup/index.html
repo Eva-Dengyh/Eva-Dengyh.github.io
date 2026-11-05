@@ -1,0 +1,54 @@
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>macOS 终端从零配置：自动补全 + 高亮 + 主题全套 · Eva Lab</title><meta name="description" content="适用环境：Apple Silicon Mac · zsh · Homebrew 前置条件 确认 Homebrew 已安装，否则先执行： /bin/bash -c &quot;$(curl -fsSL https://raw.git…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/zh/posts/macos-terminal-setup/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/macos-terminal-setup/">
+<meta property="og:title" content="macOS 终端从零配置：自动补全 + 高亮 + 主题全套"><meta property="og:description" content="适用环境：Apple Silicon Mac · zsh · Homebrew 前置条件 确认 Homebrew 已安装，否则先执行： /bin/bash -c &quot;$(curl -fsSL https://raw.git…">
+<meta property="og:url" content="https://eva-dengyh.github.io/zh/posts/macos-terminal-setup/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "macOS 终端从零配置：自动补全 + 高亮 + 主题全套", "datePublished": "2026-04-28", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/zh/about/"}, "inLanguage": "zh", "mainEntityOfPage": "https://eva-dengyh.github.io/zh/posts/macos-terminal-setup/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">跳到正文</a>
+    <header class="header"><a class="brand" href="/zh/" aria-label="Eva Lab 首页"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="首页"><a href="/zh/posts/" aria-current=page>文章</a><a href="/zh/projects/" >项目</a><a href="/zh/about/" >关于</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/macos-terminal-setup/" lang="zh" aria-current="true">中文</a><span aria-hidden="true">/</span><span class="unavailable" title="尚无英文译文">EN</span></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/zh/posts/">← 返回文章列表</a><p class="eyebrow">开发工具</p><h1>macOS 终端从零配置：自动补全 + 高亮 + 主题全套</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-28">2026.04.28</time><span>·</span><span>7 分钟阅读</span><span class="translation-note">尚无英文译文</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><blockquote><p>适用环境：Apple Silicon Mac · zsh · Homebrew</p></blockquote><img alt="图片" decoding="async" loading="lazy" src="/assets/posts/macos-terminal-setup/image-001.png"/><span class="heading-anchor" id="section-0"></span><h2>前置条件</h2><p>确认 Homebrew 已安装，否则先执行：</p><pre><code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></pre><span class="heading-anchor" id="section-1"></span><h2>第一步：安装 Oh My Zsh</h2><pre><code>sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"</code></pre><p>安装完成后终端会自动切换到新的 zsh 配置，出现 <code>~/.zshrc</code> 文件。</p><span class="heading-anchor" id="section-2"></span><h2>第二步：安装 Powerlevel10k 主题</h2><pre><code>git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k</code></pre><p>编辑 <code>~/.zshrc</code>，找到 <code>ZSH_THEME</code> 行并修改：</p><pre><code># 找到这一行
+ZSH_THEME="robbyrussell"
+
+# 改为
+ZSH_THEME="powerlevel10k/powerlevel10k"</code></pre><span class="heading-anchor" id="section-3"></span><h2>第三步：安装字体（Nerd Font）</h2><p>Powerlevel10k 需要支持图标的字体。通过 Homebrew 安装 Nerd Fonts 版的 Meslo：</p><pre><code>brew install --cask font-meslo-lg-nerd-font</code></pre><blockquote><p>📝 该 cask 安装出的字体在系统中显示为 <strong>MesloLGS Nerd Font</strong>（含 Regular/Bold/Italic/Bold Italic 四个变体），与 P10k 官方文档里提到的 "MesloLGS NF" 来源略有差异，但<strong>完全兼容</strong>所有图标。</p></blockquote><p>然后在终端 App 的偏好设置中，将字体改为该字体：</p><ul><li><strong>Terminal.app</strong>：偏好设置 → 描述文件 → 字体 → 选 <strong>MesloLGS Nerd Font</strong></li><li><strong>iTerm2</strong>：Preferences → Profiles → Text → Font → 选 <strong>MesloLGS Nerd Font</strong></li></ul><span class="heading-anchor" id="section-4"></span><h2>第四步：安装 zsh-autosuggestions（自动补全）</h2><pre><code>git clone https://github.com/zsh-users/zsh-autosuggestions \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-autosuggestions</code></pre><span class="heading-anchor" id="section-5"></span><h2>第五步：安装 zsh-completions（扩展补全库）</h2><pre><code>git clone https://github.com/zsh-users/zsh-completions \
+  ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/plugins/zsh-completions</code></pre><blockquote><p>⚠️ <strong>重要</strong>：zsh-completions 作为 OMZ 插件首次启用后，必须强制重建补全缓存才会生效（第八步里包含此操作）。</p></blockquote><span class="heading-anchor" id="section-6"></span><h2>第六步：安装 zsh-syntax-highlighting（语法高亮）</h2><p>通过 Homebrew 安装（不放在 Oh My Zsh 插件目录）：</p><pre><code>brew install zsh-syntax-highlighting</code></pre><span class="heading-anchor" id="section-7"></span><h2>第七步：配置 ~/.zshrc</h2><p>用以下内容<strong>替换</strong>整个 <code>~/.zshrc</code>（或按注释逐段合并到现有文件）：</p><pre><code># ── Powerlevel10k 即时提示（必须放最顶部）──────────────────────────
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+# ── 自定义补全目录加入 fpath（必须在 source oh-my-zsh.sh 之前）─────
+# 不要在这里手动调 compinit，OMZ 会自己调一次，避免重复
+fpath=("$HOME/.oh-my-zsh/custom/completions" $fpath)
+
+# ── Oh My Zsh 基础配置 ─────────────────────────────────────────────
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+
+plugins=(
+    git
+    zsh-autosuggestions
+    zsh-completions
+)
+
+source $ZSH/oh-my-zsh.sh
+
+# ── 语法高亮（必须放最末尾）───────────────────────────────────────
+# Apple Silicon 下 Homebrew 前缀固定为 /opt/homebrew，写死避免每次启动 fork 一次 brew
+source /opt/homebrew/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+
+# ── Powerlevel10k 用户配置 ────────────────────────────────────────
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh</code></pre><span class="heading-anchor" id="section-8"></span><h2>第八步：重建补全缓存 &amp; 重新加载</h2><p>zsh-completions <strong>首次启用必须</strong>强制重建 zcompdump，否则新增补全项不会生效：</p><pre><code>rm -f ~/.zcompdump*
+exec zsh</code></pre><p><code>exec zsh</code> 会用一个新的 zsh 进程替换当前 shell（比 <code>source ~/.zshrc</code> 更彻底，能让 instant prompt 也正常工作）。</p><p>首次加载会自动启动 <strong>p10k 配置向导</strong>，按提示依次选择：</p><ol><li>1. 字体是否显示正常（菱形、锁图标等）→ 选 Yes / No</li><li>2. Prompt 风格 → 推荐 <strong>Rainbow</strong> 或 <strong>Lean</strong></li><li>3. 编码字符集 → 推荐 <strong>Unicode</strong></li><li>4. 显示项目 → 按需勾选（时间、目录、git 状态等）</li></ol><p>向导结束后自动生成 <code>~/.p10k.zsh</code>。</p><p>如需重新配置：</p><pre><code>p10k configure</code></pre><span class="heading-anchor" id="section-9"></span><h2>第九步：验证效果</h2><table><thead><tr><th>功能</th><th>验证方式</th></tr></thead><tbody><tr><td>主题</td><td>提示符应显示彩色图标和 git 分支</td></tr><tr><td>历史建议</td><td>输入 <code>ls</code>，右侧出现灰色补全建议，按 <code>→</code> 接受</td></tr><tr><td>语法高亮</td><td>输入已知命令显示绿色，未知命令显示红色</td></tr><tr><td>Tab 补全</td><td>输入 <code>git che</code> 再按 <code>Tab</code>，显示候选列表</td></tr><tr><td>扩展补全</td><td>输入 <code>docker comp</code> 再按 <code>Tab</code>，应能补全到 <code>compose</code>（来自 zsh-completions）</td></tr></tbody></table><br/><p></p>
+<hr><p>本文原载于公众号 Preface Lab：<a href="https://mp.weixin.qq.com/s/2x39xjW388E3h6D13H79jQ">阅读公众号原文</a>。</p></article><aside class="toc"><h2>本文目录</h2><ol><li><a href="#section-0">前置条件</a></li><li><a href="#section-1">第一步：安装 Oh My Zsh</a></li><li><a href="#section-2">第二步：安装 Powerlevel10k 主题</a></li><li><a href="#section-3">第三步：安装字体（Nerd Font）</a></li><li><a href="#section-4">第四步：安装 zsh-autosuggestions（自动补全）</a></li><li><a href="#section-5">第五步：安装 zsh-completions（扩展补全库）</a></li><li><a href="#section-6">第六步：安装 zsh-syntax-highlighting（语法高亮）</a></li><li><a href="#section-7">第七步：配置 ~/.zshrc</a></li><li><a href="#section-8">第八步：重建补全缓存 &amp; 重新加载</a></li><li><a href="#section-9">第九步：验证效果</a></li></ol><a class="back-top" href="#main">回到顶部 ↑</a></aside></div><section class="related"><div class="section-heading"><h2>最近的文章</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="从一次登录开始，弄懂 MFA与动态验证码 输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统… 开发工具">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/zh/posts/mfa-totp-login/">从一次登录开始，弄懂 MFA与动态验证码</a>
+<p>输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目 最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用… 开发工具">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/zh/posts/ai-video-model-integration/">我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目</a>
+<p>最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · 学习、构建，持续记录。</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

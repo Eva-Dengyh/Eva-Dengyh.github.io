@@ -1,0 +1,400 @@
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hermes Agent 教程（1）：本地启动与项目结构 · Eva Lab</title><meta name="description" content="项目地址：https://github.com/NousResearch/hermes-agent[ttps://github.com/NousResearch/hermes-agent](https://github…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/zh/posts/hermes-agent-1-local-setup/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/hermes-agent-1-local-setup/">
+<meta property="og:title" content="Hermes Agent 教程（1）：本地启动与项目结构"><meta property="og:description" content="项目地址：https://github.com/NousResearch/hermes-agent[ttps://github.com/NousResearch/hermes-agent](https://github…">
+<meta property="og:url" content="https://eva-dengyh.github.io/zh/posts/hermes-agent-1-local-setup/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "Hermes Agent 教程（1）：本地启动与项目结构", "datePublished": "2026-04-13", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/zh/about/"}, "inLanguage": "zh", "mainEntityOfPage": "https://eva-dengyh.github.io/zh/posts/hermes-agent-1-local-setup/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">跳到正文</a>
+    <header class="header"><a class="brand" href="/zh/" aria-label="Eva Lab 首页"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="首页"><a href="/zh/posts/" aria-current=page>文章</a><a href="/zh/projects/" >项目</a><a href="/zh/about/" >关于</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/hermes-agent-1-local-setup/" lang="zh" aria-current="true">中文</a><span aria-hidden="true">/</span><span class="unavailable" title="尚无英文译文">EN</span></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/zh/posts/">← 返回文章列表</a><p class="eyebrow">AI 与智能体</p><h1>Hermes Agent 教程（1）：本地启动与项目结构</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-13">2026.04.13</time><span>·</span><span>21 分钟阅读</span><span class="translation-note">尚无英文译文</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><ul><li>项目地址：https://github.com/NousResearch/hermes-agent[ttps://github.com/NousResearch/hermes-agent](https://github.com/NousResearch/hermes-agent)</li><li>mdBook阅读链接：https://eva-dengyh.github.io/AI-Fullstack-Notes/projects/hermes-agent/index.html</li></ul><span class="heading-anchor" id="section-0"></span><h2>启动项目</h2><span class="heading-anchor" id="section-1"></span><h3>Step1:拉取项目到本地</h3><pre><code>git clone https://github.com/NousResearch/hermes-agent.git</code></pre><span class="heading-anchor" id="section-2"></span><h3>Step2:进入项目</h3><pre><code>cd /Users/YolieDeng/Code/hermes-agent</code></pre><span class="heading-anchor" id="section-3"></span><h3>Step3:创建并进入虚拟环境</h3><pre><code>uv venv
+source .venv/bin/activate</code></pre><span class="heading-anchor" id="section-4"></span><h3>Step4:下载项目依赖</h3><pre><code>    uv sync</code></pre><span class="heading-anchor" id="section-5"></span><h3>Step5:配置.env文件</h3><pre><code> cp .env.example .env 
+ # 编辑 .env，填入你的 API 密钥                  </code></pre><span class="heading-anchor" id="section-6"></span><h3>Step5:模型选择与直接启动</h3><pre><code>hermes doctor 
+# 选择适合的模型
+hermes model
+hermes</code></pre><p> </p><br/><p><br/></p><img alt="图片" decoding="async" loading="lazy" src="/assets/posts/hermes-agent-1-local-setup/image-007.png"/><span class="heading-anchor" id="section-7"></span><h2>项目结构讲解</h2><pre><code>hermes-agent/                                                                                                           
+     │                                                                                                                       
+     ├── 📁 核心框架模块                                    
+     │   ├── agent/                              # Agent 核心逻辑和执行引擎
+     │   ├── gateway/                            # API 网关、请求路由、钩子系统
+     │   │   ├── builtin_hooks/                  # 内置钩子集合
+     │   │   └── platforms/                      # 多平台适配
+     │   ├── hermes_cli/                         # CLI 命令行接口
+     │   └── tools/                              # 工具系统和工具调用解析器
+     │       ├── browser_providers/              # 浏览器供应商
+     │       ├── environments/                   # 工具环境配置
+     │       └── neutts_samples/                 # 神经TTS示例
+     │
+     ├── 📁 配置与适配
+     │   ├── acp_adapter/                        # ACP 协议适配器
+     │   ├── acp_registry/                       # 服务注册表
+     │   ├── plugins/                            # 插件系统
+     │   │   └── memory/                         # 内存/记忆插件
+     │   │       ├── byterover/                  # Byterover 内存实现
+     │   │       ├── hindsight/                  # Hindsight 内存实现
+     │   │       ├── holographic/                # Holographic 内存实现
+     │   │       ├── honcho/                     # Honcho 内存实现
+     │   │       ├── mem0/                       # Mem0 内存实现
+     │   │       ├── openviking/                 # OpenViking 内存实现
+     │   │       ├── retaindb/                   # RetainDB 内存实现
+     │   │       └── supermemory/                # SuperMemory 内存实现
+     │   └── environments/                       # 环境配置和管理
+     │       ├── benchmarks/                     # 基准测试环境
+     │       │   ├── tblite/                     # TBLite 基准
+     │       │   ├── terminalbench_2/            # 终端基准2
+     │       │   └── yc_bench/                   # YC 基准
+     │       ├── hermes_swe_env/                 # Hermes SWE 环境
+     │       ├── terminal_test_env/              # 终端测试环境
+     │       └── tool_call_parsers/              # 工具调用解析器
+     │
+     ├── 📁 功能扩展 - Skills (完整技能列表)
+     │   └── skills/                             # 完整技能模块集合
+     │       │
+     │       ├── 📂 苹果生态技能
+     │       │   └── apple/
+     │       │       ├── apple-notes/            # Apple Notes 集成
+     │       │       ├── apple-reminders/        # Apple Reminders 集成
+     │       │       ├── findmy/                 # Find My 定位服务
+     │       │       └── imessage/               # iMessage 消息
+     │       │
+     │       ├── 📂 AI Agent 技能
+     │       │   └── autonomous-ai-agents/
+     │       │       ├── claude-code/            # Claude Code 集成
+     │       │       ├── codex/                  # Codex AI 集成
+     │       │       ├── hermes-agent/           # Hermes Agent 自身
+     │       │       └── opencode/               # OpenCode 集成
+     │       │
+     │       ├── 📂 创意工具
+     │       │   └── creative/
+     │       │       ├── ascii-art/              # ASCII 艺术生成
+     │       │       ├── ascii-video/            # ASCII 视频生成
+     │       │       ├── excalidraw/             # Excalidraw 绘图
+     │       │       ├── manim-video/            # Manim 视频制作
+     │       │       ├── p5js/                   # P5.js 创意编程
+     │       │       └── songwriting-and-ai-music/  # 作曲和AI音乐
+     │       │
+     │       ├── 📂 数据科学
+     │       │   └── data-science/
+     │       │       └── jupyter-live-kernel/    # Jupyter 实时内核
+     │       │
+     │       ├── 📂 运维和开发工具
+     │       │   ├── devops/
+     │       │   │   └── webhook-subscriptions/  # Webhook 订阅
+     │       │   ├── diagramming/                # 图表工具
+     │       │   └── domain/                     # 域名工具
+     │       │
+     │       ├── 📂 Email 工具
+     │       │   └── email/
+     │       │       └── himalaya/               # Himalaya 邮件客户端
+     │       │
+     │       ├── 📂 Feed 和 RSS
+     │       │   └── feeds/                      # Feed 聚合工具
+     │       │
+     │       ├── 📂 游戏工具
+     │       │   └── gaming/
+     │       │       ├── minecraft-modpack-server/  # Minecraft 模组服务器
+     │       │       └── pokemon-player/         # 宝可梦玩家工具
+     │       │
+     │       ├── 📂 GIF 工具
+     │       │   └── gifs/                       # GIF 生成和处理
+     │       │
+     │       ├── 📂 GitHub 集成
+     │       │   └── github/
+     │       │       ├── codebase-inspection/    # 代码库检查
+     │       │       ├── github-auth/            # GitHub 认证
+     │       │       ├── github-code-review/     # 代码审查
+     │       │       ├── github-issues/          # Issue 管理
+     │       │       ├── github-pr-workflow/     # PR 工作流
+     │       │       └── github-repo-management/ # 仓库管理
+     │       │
+     │       ├── 📂 索引和缓存
+     │       │   └── index-cache/                # 索引缓存
+     │       │
+     │       ├── 📂 推理工具
+     │       │   └── inference-sh/               # 推理 Shell 脚本
+     │       │
+     │       ├── 📂 休闲娱乐
+     │       │   └── leisure/
+     │       │       └── find-nearby/            # 附近地点查找
+     │       │
+     │       ├── 📂 MCP (模型上下文协议)
+     │       │   └── mcp/
+     │       │       ├── mcporter/               # MCP 转换器
+     │       │       └── native-mcp/             # 原生 MCP 支持
+     │       │
+     │       ├── 📂 媒体工具
+     │       │   └── media/
+     │       │       ├── gif-search/             # GIF 搜索
+     │       │       ├── heartmula/              # 音乐播放器
+     │       │       ├── songsee/                # 歌曲识别
+     │       │       └── youtube-content/        # YouTube 内容工具
+     │       │
+     │       ├── 📂 MLOps 工具
+     │       │   └── mlops/
+     │       │       ├── cloud/                  # 云平台工具
+     │       │       ├── evaluation/             # 模型评估
+     │       │       ├── huggingface-hub/        # HuggingFace 集成
+     │       │       ├── inference/              # 模型推理
+     │       │       ├── models/                 # 模型管理
+     │       │       ├── research/               # 研究工具
+     │       │       ├── training/               # 模型训练
+     │       │       └── vector-databases/       # 向量数据库
+     │       │
+     │       ├── 📂 笔记应用
+     │       │   └── note-taking/
+     │       │       └── obsidian/               # Obsidian 笔记集成
+     │       │
+     │       ├── 📂 生产力工具
+     │       │   └── productivity/
+     │       │       ├── google-workspace/       # Google Workspace 集成
+     │       │       ├── linear/                 # Linear 项目管理
+     │       │       ├── nano-pdf/               # PDF 工具
+     │       │       ├── notion/                 # Notion 集成
+     │       │       ├── ocr-and-documents/      # OCR 和文档处理
+     │       │       └── powerpoint/             # PowerPoint 制作
+     │       │
+     │       ├── 📂 红队工具
+     │       │   └── red-teaming/
+     │       │       └── godmode/                # GodMode 工具
+     │       │
+     │       ├── 📂 研究工具
+     │       │   └── research/
+     │       │       ├── arxiv/                  # ArXiv 论文
+     │       │       ├── blogwatcher/            # 博客监控
+     │       │       ├── llm-wiki/               # LLM Wiki
+     │       │       ├── polymarket/             # Polymarket 数据
+     │       │       └── research-paper-writing/ # 论文写作
+     │       │
+     │       ├── 📂 智能家居
+     │       │   └── smart-home/
+     │       │       └── openhue/                # OpenHue 智能灯控
+     │       │
+     │       ├── 📂 社交媒体
+     │       │   └── social-media/
+     │       │       └── xitter/                 # X/Twitter 集成
+     │       │
+     │       └── 📂 软件开发
+     │           └── software-development/
+     │               ├── plan/                   # 计划工具
+     │               ├── requesting-code-review/ # 代码审查请求
+     │               ├── subagent-driven-development/  # 子Agent 驱动开发
+     │               ├── systematic-debugging/   # 系统化调试
+     │               ├── test-driven-development/  # TDD 工具
+     │               └── writing-plans/          # 计划编写
+     │
+     ├── 📁 可选技能扩展
+     │   └── optional-skills/                    # 可选安装的高级技能包
+     │       │
+     │       ├── 📂 自主 AI Agent
+     │       │   └── autonomous-ai-agents/
+     │       │       ├── blackbox/               # BlackBox AI
+     │       │       └── honcho/                 # Honcho 框架
+     │       │
+     │       ├── 📂 区块链技能
+     │       │   └── blockchain/
+     │       │       ├── base/                   # Base 区块链
+     │       │       └── solana/                 # Solana 链
+     │       │
+     │       ├── 📂 通信工具
+     │       │   └── communication/
+     │       │       └── one-three-one-rule/     # 一对一通信规则
+     │       │
+     │       ├── 📂 创意能力
+     │       │   └── creative/
+     │       │       ├── blender-mcp/            # Blender 3D 建模
+     │       │       └── meme-generation/        # 梗图生成
+     │       │
+     │       ├── 📂 DevOps 高级工具
+     │       │   └── devops/
+     │       │       ├── cli/                    # DevOps CLI
+     │       │       └── docker-management/      # Docker 管理
+     │       │
+     │       ├── 📂 邮件服务
+     │       │   └── email/
+     │       │       └── agentmail/              # Agent 邮件服务
+     │       │
+     │       ├── 📂 健康工具
+     │       │   └── health/
+     │       │       └── neuroskill-bci/         # 脑机接口工具
+     │       │
+     │       ├── 📂 MCP 工具
+     │       │   └── mcp/
+     │       │       └── fastmcp/                # FastMCP 框架
+     │       │
+     │       ├── 📂 数据迁移
+     │       │   └── migration/
+     │       │       └── openclaw-migration/     # OpenClaw 迁移工具
+     │       │
+     │       ├── 📂 MLOps 高级功能 (17个子模块)
+     │       │   └── mlops/
+     │       │       ├── accelerate/             # Hugging Face Accelerate
+     │       │       ├── chroma/                 # Chroma 向量库
+     │       │       ├── faiss/                  # Facebook FAISS
+     │       │       ├── flash-attention/        # Flash Attention 优化
+     │       │       ├── hermes-atropos-environments/  # Atropos 环境
+     │       │       ├── huggingface-tokenizers/ # HF Tokenizers
+     │       │       ├── instructor/             # Instructor 框架
+     │       │       ├── lambda-labs/            # Lambda Labs GPU
+     │       │       ├── llava/                  # LLaVA 多模态
+     │       │       ├── nemo-curator/           # NeMo Curator
+     │       │       ├── pinecone/               # Pinecone 向量DB
+     │       │       ├── pytorch-lightning/      # PyTorch Lightning
+     │       │       ├── qdrant/                 # Qdrant 向量DB
+     │       │       ├── saelens/                # SAELENS 框架
+     │       │       ├── simpo/                  # SimPO 训练
+     │       │       ├── slime/                  # SLIME 框架
+     │       │       └── tensorrt-llm/           # TensorRT LLM
+     │       │       └── torchtitan/             # TorchTitan 分布式
+     │       │
+     │       ├── 📂 生产力扩展
+     │       │   └── productivity/
+     │       │       ├── canvas/                 # Canvas 协作工具
+     │       │       ├── memento-flashcards/     # 闪卡工具
+     │       │       ├── siyuan/                 # 思源笔记
+     │       │       └── telephony/              # 电话集成
+     │       │
+     │       ├── 📂 研究高级工具 (7个子模块)
+     │       │   └── research/
+     │       │       ├── bioinformatics/         # 生物信息学
+     │       │       ├── domain-intel/           # 领域智能
+     │       │       ├── duckduckgo-search/      # DuckDuckGo 搜索
+     │       │       ├── gitnexus-explorer/      # Git 仓库浏览
+     │       │       ├── parallel-cli/           # 并行 CLI
+     │       │       ├── qmd/                    # Quarto Markdown
+     │       │       └── scrapling/              # 网页爬虫
+     │       │
+     │       └── 📂 安全工具
+     │           └── security/
+     │               ├── 1password/              # 1Password 集成
+     │               ├── oss-forensics/          # OSS 取证工具
+     │               └── sherlock/               # Sherlock 用户搜索
+     │
+     ├── 📁 应用与前端
+     │   ├── landingpage/                       # 落地页面
+     │   └── website/                            # 项目官网
+     │       ├── docs/                           # 网站文档
+     │       │   ├── developer-guide/            # 开发者指南
+     │       │   ├── getting-started/            # 入门指南
+     │       │   ├── guides/                     # 使用指南
+     │       │   ├── integrations/               # 集成文档
+     │       │   ├── reference/                  # API 参考
+     │       │   └── user-guide/                 # 用户指南
+     │       ├── scripts/                        # 网站脚本
+     │       ├── src/                            # 网站源代码
+     │       │   ├── css/                        # 样式文件
+     │       │   └── pages/                      # 页面组件
+     │       └── static/                         # 静态资源
+     │           └── img/                        # 图片资源
+     │
+     ├── 📁 测试与质量保证
+     │   └── tests/                              # 完整测试套件
+     │       ├── acp/                            # ACP 适配器测试
+     │       ├── agent/                          # Agent 核心测试
+     │       ├── cli/                            # CLI 测试
+     │       ├── cron/                           # 定时任务测试
+     │       ├── e2e/                            # 端到端测试
+     │       ├── environments/                   # 环境测试
+     │       │   └── benchmarks/                 # 基准测试
+     │       ├── fakes/                          # Mock 和 Fake 对象
+     │       ├── gateway/                        # 网关测试
+     │       ├── hermes_cli/                     # CLI 测试
+     │       ├── honcho_plugin/                  # Honcho 插件测试
+     │       ├── integration/                    # 集成测试
+     │       ├── plugins/                        # 插件测试
+     │       │   └── memory/                     # 内存插件测试
+     │       ├── run_agent/                      # Agent 运行测试
+     │       ├── skills/                         # Skill 单元测试
+     │       └── tools/                          # 工具测试
+     │
+     ├── 📁 构建与部署
+     │   ├── docker/                             # Docker 配置
+     │   ├── nix/                                # Nix 声明式配置
+     │   ├── packaging/                          # 包管理配置
+     │   │   └── homebrew/                       # Homebrew 公式
+     │   ├── scripts/                            # 辅助脚本
+     │   │   └── whatsapp-bridge/                # WhatsApp 桥接脚本
+     │   └── docs/                               # 项目文档
+     │       ├── migration/                      # 迁移文档
+     │       ├── plans/                          # 规划文档
+     │       └── skins/                          # 主题/皮肤文档
+     │
+     ├── 📁 项目资源
+     │   ├── assets/                             # 静态资源（图片、图标）
+     │   ├── plans/                              # 执行计划存储
+     │   ├── datagen-config-examples/            # 数据生成示例配置
+     │   └── tinker-atropos/                     # 实验性项目/工具
+     │
+     └── 📄 根目录核心文件
+         ├── 🐍 主要 Python 模块
+         │   ├── cli.py                          # 主 CLI 入口 (~410KB)
+         │   ├── run_agent.py                    # Agent 执行引擎 (~500KB)
+         │   ├── batch_runner.py                 # 批量任务运行器
+         │   ├── rl_cli.py                       # 强化学习 CLI
+         │   ├── mini_swe_runner.py              # 小型 SWE 运行器
+         │   ├── mcp_serve.py                    # MCP 服务入口
+         │   ├── trajectory_compressor.py        # 轨迹压缩工具
+         │   ├── toolsets.py                     # 工具集管理
+         │   ├── toolset_distributions.py        # 工具集分发
+         │   ├── model_tools.py                  # 模型工具集
+         │   ├── hermes_state.py                 # Agent 状态管理
+         │   ├── hermes_logging.py               # 日志系统
+         │   ├── hermes_time.py                  # 时间工具
+         │   ├── hermes_constants.py             # 常量定义
+         │   └── utils.py                        # 工具函数
+         │
+         ├── 📦 配置文件
+         │   ├── pyproject.toml                  # Python 项目配置
+         │   ├── requirements.txt                # Python 依赖
+         │   ├── setup-hermes.sh                 # 安装脚本
+         │   ├── flake.nix                       # Nix 开发环境
+         │   ├── flake.lock                      # Nix 依赖锁定
+         │   ├── package.json                    # Node.js 项目配置
+         │   ├── package-lock.json               # Node.js 依赖锁定
+         │   ├── uv.lock                         # UV 包管理器锁定文件
+         │   ├── MANIFEST.in                     # 包清单
+         │   └── constraints-termux.txt          # Termux 约束
+         │
+         ├── 🐳 部署配置
+         │   └── Dockerfile                      # 容器镜像
+         │
+         ├── 📝 文档和示例
+         │   ├── README.md                       # 项目自述文件
+         │   ├── CONTRIBUTING.md                 # 贡献指南
+         │   ├── AGENTS.md                       # Agent 文档
+         │   ├── LICENSE                         # 许可证
+         │   ├── cli-config.yaml.example         # CLI 配置示例
+         │   └── RELEASE_v*.md                   # 发版说明
+         │       ├── RELEASE_v0.2.0.md
+         │       ├── RELEASE_v0.3.0.md
+         │       ├── RELEASE_v0.4.0.md
+         │       ├── RELEASE_v0.5.0.md
+         │       ├── RELEASE_v0.6.0.md
+         │       ├── RELEASE_v0.7.0.md
+         │       └── RELEASE_v0.8.0.md
+         │
+         ├── 📂 开发工具
+         │   ├── .env                            # 环境变量（已配置）
+         │   ├── .env.example                    # 环境变量模板
+         │   ├── .envrc                          # direnv 配置
+         │   ├── .gitignore                      # Git 忽略规则
+         │   ├── .gitmodules                     # Git 子模块配置
+         │   ├── .dockerignore                   # Docker 忽略规则
+         │   └── .github/                        # GitHub Actions 配置
+         │
+         └── 📁 项目管理
+             ├── .git/                           # Git 仓库
+             ├── .plans/                         # Claude Code 计划
+             ├── .venv/                          # Python 虚拟环境
+             ├── __pycache__/                    # Python 缓存
+             └── .idea/                          # IntelliJ IDEA 配置
+</code></pre><blockquote><p>说明：仓库体积与版本会变，上述树形结构用于建立整体心智模型；以你本地 <code>git clone</code> 后的实际目录为准。</p></blockquote><p> </p><br/><p></p>
+<hr><p>本文原载于公众号 Preface Lab：<a href="https://mp.weixin.qq.com/s/fO3muYwQ_BuM6e0ULFdX7A">阅读公众号原文</a>。</p></article><aside class="toc"><h2>本文目录</h2><ol><li><a href="#section-0">启动项目</a></li><li><a href="#section-1">Step1:拉取项目到本地</a></li><li><a href="#section-2">Step2:进入项目</a></li><li><a href="#section-3">Step3:创建并进入虚拟环境</a></li><li><a href="#section-4">Step4:下载项目依赖</a></li><li><a href="#section-5">Step5:配置.env文件</a></li><li><a href="#section-6">Step5:模型选择与直接启动</a></li><li><a href="#section-7">项目结构讲解</a></li></ol><a class="back-top" href="#main">回到顶部 ↑</a></aside></div><section class="related"><div class="section-heading"><h2>最近的文章</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="从一次登录开始，弄懂 MFA与动态验证码 输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统… 开发工具">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/zh/posts/mfa-totp-login/">从一次登录开始，弄懂 MFA与动态验证码</a>
+<p>输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目 最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用… 开发工具">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/zh/posts/ai-video-model-integration/">我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目</a>
+<p>最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · 学习、构建，持续记录。</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>

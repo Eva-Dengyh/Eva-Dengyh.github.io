@@ -1,0 +1,192 @@
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>用 mdBook + GitHub Pages 搭建个人技术笔记站 · Eva Lab</title><meta name="description" content="公众号的所有文章都会同步整理到 GitHub 仓库：https://github.com/Eva-Dengyh/AI-Fullstack-Notes，仓库版本会包含更完整的代码示例、补充说明和后续更新——如果对你有帮助…">
+<meta name="robots" content="index,follow"><meta name="theme-color" content="#fafbf9">
+<link rel="canonical" href="https://eva-dengyh.github.io/zh/posts/mdbook-github-pages/"><link rel="alternate" hreflang="zh-CN" href="https://eva-dengyh.github.io/zh/posts/mdbook-github-pages/">
+<meta property="og:title" content="用 mdBook + GitHub Pages 搭建个人技术笔记站"><meta property="og:description" content="公众号的所有文章都会同步整理到 GitHub 仓库：https://github.com/Eva-Dengyh/AI-Fullstack-Notes，仓库版本会包含更完整的代码示例、补充说明和后续更新——如果对你有帮助…">
+<meta property="og:url" content="https://eva-dengyh.github.io/zh/posts/mdbook-github-pages/"><meta property="og:type" content="article">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="/assets/site.css">
+<link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
+<script src="/assets/site.js" defer></script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BlogPosting", "headline": "用 mdBook + GitHub Pages 搭建个人技术笔记站", "datePublished": "2026-04-10", "author": {"@type": "Person", "name": "Eva", "url": "https://eva-dengyh.github.io/zh/about/"}, "inLanguage": "zh", "mainEntityOfPage": "https://eva-dengyh.github.io/zh/posts/mdbook-github-pages/"}</script></head>
+<body><div class="site"><a class="skip" href="#main">跳到正文</a>
+    <header class="header"><a class="brand" href="/zh/" aria-label="Eva Lab 首页"><span class="brand-mark" aria-hidden="true">e<span>.</span></span>Eva Lab<span class="brand-sub"> / notes</span></a>
+    <nav aria-label="首页"><a href="/zh/posts/" aria-current=page>文章</a><a href="/zh/projects/" >项目</a><a href="/zh/about/" >关于</a></nav><div class="languages" aria-label="Language"><a href="/zh/posts/mdbook-github-pages/" lang="zh" aria-current="true">中文</a><span aria-hidden="true">/</span><span class="unavailable" title="尚无英文译文">EN</span></div></header><main id="main"><div class="article-heading"><a class="back-link" href="/zh/posts/">← 返回文章列表</a><p class="eyebrow">开发工具</p><h1>用 mdBook + GitHub Pages 搭建个人技术笔记站</h1><div class="article-meta"><span>Eva</span><span>·</span><time datetime="2026-04-10">2026.04.10</time><span>·</span><span>16 分钟阅读</span><span class="translation-note">尚无英文译文</span></div></div>
+<div class="article-layout"><article class="prose" data-article><p> </p><blockquote><p>公众号的所有文章都会同步整理到 GitHub 仓库：https://github.com/Eva-Dengyh/AI-Fullstack-Notes，仓库版本会包含更完整的代码示例、补充说明和后续更新——如果对你有帮助，欢迎 Star ⭐ 收藏，也欢迎通过Issue指出错误或交流想法。</p></blockquote><p><strong>场景</strong>：你有一堆 Markdown 笔记，想把它们整理成一本可在线访问、带导航、支持搜索的"技术书"，并且每次 <code>git push</code> 就自动发布到网上。mdBook + GitHub Pages + GitHub Actions 可以在 30 分钟内帮你做到这一切，还是完全免费的。</p><p>本文覆盖：</p><ul><li>本地安装与初始化</li><li>目录结构与 <code>SUMMARY.md</code> 编写规则</li><li><code>book.toml</code> 完整配置说明</li><li>自定义外观（主题色、字体、favicon）</li><li>GitHub Actions 自动部署、<code>.gitignore</code> 与 Pages 设置</li></ul><span class="heading-anchor" id="section-0"></span><h2>一、前置条件</h2><table><thead><tr><th>工具</th><th>版本要求</th><th>说明</th></tr></thead><tbody><tr><td>Rust / Cargo</td><td>任意稳定版</td><td>用于通过 <code>cargo install</code> 安装 mdBook</td></tr><tr><td>Git</td><td>≥ 2.x</td><td>版本管理与推送</td></tr><tr><td>GitHub 账号</td><td>—</td><td>托管仓库 + Pages 部署</td></tr></tbody></table><p>如果你不想安装 Rust，也可以直接从 GitHub Releases 下载编译好的二进制文件，放到 <code>PATH</code> 即可。</p><span class="heading-anchor" id="section-1"></span><h2>二、安装 mdBook</h2><span class="heading-anchor" id="section-2"></span><h3>方式 A：通过 Cargo 安装（推荐）</h3><pre><code>cargo install mdbook</code></pre><p>安装完成后验证：</p><pre><code>mdbook --version
+# 常见为 v0.5.x（与 CI 里 mdbook-version: "latest" 一致）
+# 若需与旧版插件兼容，可固定为 0.4.x，例如：cargo install mdbook --locked --version 0.4.52</code></pre><span class="heading-anchor" id="section-3"></span><h3>方式 B：下载二进制（无需 Rust）</h3><pre><code># macOS (Apple Silicon)
+curl -L https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-aarch64-apple-darwin.tar.gz \
+  | tar xz -C /usr/local/bin
+
+# Linux x86_64
+curl -L https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-x86_64-unknown-linux-gnu.tar.gz \
+  | tar xz -C /usr/local/bin</code></pre><span class="heading-anchor" id="section-4"></span><h2>三、初始化项目</h2><span class="heading-anchor" id="section-5"></span><h3>3.1 全新项目</h3><pre><code>mdbook init my-notes
+cd my-notes</code></pre><p><code>init</code> 会生成如下结构：</p><pre><code>my-notes/
+├── book.toml        # 核心配置文件
+└── src/
+    ├── SUMMARY.md   # 目录（mdBook 的"地图"）
+    └── chapter_1.md</code></pre><span class="heading-anchor" id="section-6"></span><h3>3.2 已有 Markdown 仓库接入</h3><p>如果你已经有一个 git 仓库，里面放着若干 <code>.md</code> 文件，可以直接在根目录：</p><pre><code>mdbook init --force .</code></pre><p>然后手动调整 <code>book.toml</code> 中的 <code>src</code> 路径（下一节详解）。</p><p><strong>注意</strong>：<code>mdbook build</code> 的默认输出目录是仓库根下的 <strong><code>book/</code></strong>。请尽早添加根目录 <strong><code>.gitignore</code></strong> 中的 <code>book/</code>（见第九节），<strong>不要</strong>把 <code>book/</code> 当成子模块提交；否则既没有 <code>.gitmodules</code> 里的 URL，又会在 CI 的 <code>actions/checkout</code> 拉子模块时报错。</p><span class="heading-anchor" id="section-7"></span><h2>四、book.toml 完整配置详解</h2><p><code>book.toml</code> 是 mdBook 的核心配置，使用 TOML 格式。以下是一份生产可用的完整配置，带逐行注释：</p><pre><code># ── 书籍基本信息 ──────────────────────────────────────────
+[book]
+title       = "AI-Fullstack-Notes"          # 显示在左上角的书名
+description = "全栈工程师的 AI/Agent 学习笔记"
+authors     = ["Eva"]
+language    = "zh"                           # 界面语言（影响搜索分词）
+src         = "."                            # Markdown 源文件根目录
+                                             # 默认 "src"；改成 "." 表示仓库根目录即源目录
+
+# ── HTML 输出配置 ─────────────────────────────────────────
+[output.html]
+site-url = "/AI-Fullstack-Notes/"           # GitHub Pages 子路径，必须与仓库名一致
+                                             # 本地预览时注释掉此行，否则资源路径会错
+
+git-repository-url  = "https://github.com/Eva-Dengyh/AI-Fullstack-Notes"
+# mdBook 0.5+：品牌图标 fa-github 等会触发构建错误 Missing font github，请省略 git-repository-icon。
+# git-repository-icon = "fa-github"
+
+# 每个页面底部显示"在 GitHub 上编辑此页"链接
+edit-url-template = "https://github.com/Eva-Dengyh/AI-Fullstack-Notes/edit/main/{path}"
+
+# 其他常用可选项（按需启用）：
+# theme            = "coal"                 # 默认主题：light/rust/coal/navy/ayu
+# default-theme    = "light"               # 读者首次打开时的主题
+# preferred-dark-theme = "navy"            # 系统暗色模式时使用的主题
+# mathjax-support  = true                  # 启用 LaTeX 数学公式
+# no-section-label = true                  # 目录标题前不显示章节编号
+# additional-css   = ["theme/custom.css"]  # 自定义 CSS
+# additional-js    = ["theme/custom.js"]   # 自定义 JS
+# search.enable    = true                  # 默认开启全文搜索</code></pre><blockquote><p><strong>关键踩坑点</strong>：<code>site-url</code> 必须与你的 GitHub 仓库名完全一致（含大小写），否则部署后图片、CSS 路径全部 404。</p></blockquote><span class="heading-anchor" id="section-8"></span><h2>五、SUMMARY.md 编写规则</h2><p><code>SUMMARY.md</code> 是 mdBook 读取目录结构的唯一入口，<strong>文件路径相对于 <code>src</code> 目录</strong>（即 <code>book.toml</code> 中 <code>src</code> 指定的目录）。</p><span class="heading-anchor" id="section-9"></span><h3>5.1 基本语法</h3><pre><code># 目录
+
+&lt;!-- 前言：不计入章节编号，显示在最顶部 --&gt;
+[前言](README.md)
+
+---
+
+# 一级分组标题（纯文本，不可点击）
+
+- [章节标题](path/to/file.md)
+  - [子章节](path/to/sub.md)
+    - [孙章节](path/to/subsub.md)
+
+# 另一个分组
+
+- [另一章](another.md)
+
+---
+
+&lt;!-- 后记：不计入章节编号 --&gt;
+[附录](appendix.md)</code></pre><span class="heading-anchor" id="section-10"></span><h3>5.2 实战示例（本项目的 SUMMARY.md 结构）</h3><pre><code># 目录
+
+[前言](README.md)
+
+---
+
+# AI / Agent
+
+- [LangChain 架构浅析](ai/langchain-architecture.md)
+- [LangGraph — 通过图结构重新定义 LLM 应用](ai/langgraph-intro.md)
+- [RAG 实战：从手写 MVP 到生产级优化](ai/rag-mvp-to-production.md)
+
+# 架构 / 后端
+
+- [高并发架构设计思考](backend/high-concurrency-architecture.md)
+- [Nginx 全解析：反向代理与负载均衡](backend/nginx-reverse-proxy-load-balance.md)
+
+# 基础设施 / 运维
+
+- [Docker 基础与 Dockerfile 编写](infra/docker-basics-dockerfile.md)
+- [5 分钟用 Docker 自建 Supabase](infra/supabase-docker-self-host.md)</code></pre><span class="heading-anchor" id="section-11"></span><h3>5.3 规则速查</h3><table><thead><tr><th>规则</th><th>说明</th></tr></thead><tbody><tr><td><code>[标题](路径)</code></td><td>只有列在这里的文件才会出现在书中</td></tr><tr><td><code>---</code></td><td>水平分隔线，仅用于视觉分隔</td></tr><tr><td><code># 标题</code></td><td>分组标题，不可点击，不生成页面</td></tr><tr><td>缩进（2 或 4 空格）</td><td>表示子章节，可无限嵌套</td></tr><tr><td>文件路径</td><td>相对于 <code>src</code> 目录；未列出的 <code>.md</code> 文件不会被编译</td></tr></tbody></table><span class="heading-anchor" id="section-12"></span><h2>六、本地预览</h2><pre><code># 启动本地开发服务器，文件变动自动刷新
+mdbook serve --open
+
+# 仅构建，不启动服务器
+mdbook build
+# 输出目录：./book/</code></pre><blockquote><p>本地预览时，如果 <code>book.toml</code> 设置了 <code>site-url = "/AI-Fullstack-Notes/"</code>，访问 <code>http://localhost:3000</code> 时页面会空白。临时注释掉该行，或用 <code>http://localhost:3000/AI-Fullstack-Notes/</code> 访问。</p></blockquote><span class="heading-anchor" id="section-13"></span><h2>七、自定义外观（可选）</h2><span class="heading-anchor" id="section-14"></span><h3>7.1 覆盖主题变量</h3><p>在项目根目录创建 <code>theme/</code> 文件夹，添加 <code>custom.css</code>：</p><pre><code>/* theme/custom.css */
+:root {
+  --sidebar-bg: #1a1a2e;        /* 侧边栏背景色 */
+  --sidebar-fg: #e0e0e0;        /* 侧边栏文字色 */
+  --links: #4fc3f7;             /* 链接颜色 */
+}</code></pre><p>在 <code>book.toml</code> 中引用：</p><pre><code>[output.html]
+additional-css = ["theme/custom.css"]</code></pre><span class="heading-anchor" id="section-15"></span><h3>7.2 添加 favicon</h3><pre><code>mkdir -p theme
+cp your-favicon.png theme/favicon.png
+# 或 .ico 格式
+cp your-favicon.ico theme/favicon.ico</code></pre><p>mdBook 会自动识别 <code>theme/favicon.png</code> 或 <code>theme/favicon.ico</code>，无需额外配置。</p><span class="heading-anchor" id="section-16"></span><h3>7.3 启用 MathJax（数学公式）</h3><pre><code>[output.html]
+mathjax-support = true</code></pre><p>使用时：</p><pre><code>行内公式：$E = mc^2$
+
+块级公式：
+$$
+\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}
+$$</code></pre><span class="heading-anchor" id="section-17"></span><h2>八、GitHub Actions 自动部署</h2><span class="heading-anchor" id="section-18"></span><h3>8.1 目录结构</h3><pre><code>your-repo/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml   ← 新建此文件
+├── book.toml
+├── SUMMARY.md
+├── .gitignore           ← 建议：忽略 book/（见第九节）
+└── ...（你的 .md 文件）</code></pre><span class="heading-anchor" id="section-19"></span><h3>8.2 deploy.yml 完整内容</h3><pre><code>name: Deploy mdBook to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main          # 只有推送到 main 分支才触发
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 必须：允许 Actions 向仓库写入（gh-pages 分支）
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: false   # 若误把 book/ 登记成 submodule 且无 .gitmodules，拉子模块会失败；显式关闭更稳妥
+
+      - name: Install mdBook
+        uses: peaceiris/actions-mdbook@v2
+        with:
+          mdbook-version: "latest"   # 可固定版本号，如 "0.4.52"（需与本地/插件兼容时再考虑）
+
+      - name: Build
+        run: mdbook build
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./book        # 只发布构建产物，勿把整个仓库推到 gh-pages
+          # force_orphan: true      # 可选：每次用单提交覆盖 gh-pages，清掉历史上误提交的源码/混杂文件</code></pre><span class="heading-anchor" id="section-20"></span><h3>8.3 GitHub 仓库设置</h3><ol><li>1. 进入仓库 → <strong>Settings</strong> → <strong>Pages</strong></li><li>2. Source 选择 <strong>Deploy from a branch</strong></li><li>3. Branch 选择 <code>gh-pages</code>，目录选 <code>/ (root)</code></li><li>4. 点击 <strong>Save</strong></li></ol><blockquote><p><strong>Pages 源不要选错：</strong></p><ul><li><strong>不要</strong><code>main</code> + <strong><code>/docs</code></strong>：会跑 <strong>Jekyll</strong>（日志里常见 <code>jekyll-build-pages</code>、<code>Source: .../docs</code>）。没有 Jekyll 项目时会报 <strong><code>/docs</code> 目录不存在</strong>。</li><li><strong>不要</strong><code>main</code> + <strong><code>/ (root)</code></strong>：GitHub 仍会用 Jekyll 处理仓库，首页往往是 <strong><code>README.md</code></strong>，看起来像「单页文档」，<strong>不是 mdBook 的书本界面</strong>。在线阅读必须来自 <strong><code>gh-pages</code></strong> 上的静态文件。</li><li><strong>正确</strong>：<strong><code>gh-pages</code> + <code>/ (root)</code></strong>（内容由上一节的 <code>deploy.yml</code> 把 <strong><code>./book/</code></strong> 推送到 <code>gh-pages</code>）。</li></ul></blockquote><p>第一次 <code>git push main</code> 后，Actions 跑完（约 1-2 分钟），访问：</p><pre><code>https://&lt;你的用户名&gt;.github.io/&lt;仓库名&gt;/</code></pre><span class="heading-anchor" id="section-21"></span><h3>8.4 工作流说明</h3><pre><code>git push main
+     │
+     ▼
+GitHub Actions 触发
+     │
+     ├─ actions/checkout@v4        # 拉取代码（submodules: false）
+     ├─ peaceiris/actions-mdbook@v2 # 安装 mdBook 二进制
+     ├─ mdbook build               # 编译 → ./book/
+     └─ peaceiris/actions-gh-pages@v4
+           └─ 将 ./book/ 推送到 gh-pages 分支
+                    │
+                    ▼
+           GitHub Pages 自动部署</code></pre><span class="heading-anchor" id="section-22"></span><h2>九、.gitignore 配置</h2><p>构建输出目录 <strong><code>book/</code></strong> 应加入忽略，避免：</p><ul><li>把大量生成文件提交进 <code>main</code>；</li><li>误将 <strong><code>book/</code> 登记为 git submodule</strong>（索引里出现 <code>160000</code> 模式且无 <code>.gitmodules</code> 时，CI 在拉子模块阶段会报 <strong><code>No url found for submodule path 'book'</code></strong>）。</li></ul><pre><code># mdBook 构建输出（勿提交；勿误登记为 submodule）
+book/</code></pre><span class="heading-anchor" id="section-23"></span><h2>十、项目最终结构参考</h2><pre><code>AI-Fullstack-Notes/
+├── .github/
+│   └── workflows/
+│       └── deploy.yml        # CI/CD 自动部署
+├── ai/
+│   ├── langchain-architecture.md
+│   └── rag-mvp-to-production.md
+├── backend/
+│   └── high-concurrency-architecture.md
+├── infra/
+│   └── docker-basics-dockerfile.md
+├── projects/
+│   └── fastsam-demo-v1.md
+├── theme/
+│   ├── custom.css            # 可选：自定义样式
+│   └── favicon.png           # 可选：网站图标
+├── book.toml                 # 核心配置
+├── SUMMARY.md                # 目录结构
+├── README.md                 # 前言/首页
+└── .gitignore                # 排除 book/</code></pre><span class="heading-anchor" id="section-24"></span><h2>总结</h2><p>整个流程下来，你得到的是：一个<strong>自动化发布</strong>、<strong>全文可搜索</strong>、<strong>支持暗色模式</strong>、<strong>免费托管</strong>的技术知识库。以后在 <strong><code>main</code></strong> 上改 Markdown 并 <code>git push</code>，由 Actions 重新 <strong><code>mdbook build</code></strong> 后更新 <strong><code>gh-pages</code></strong>；读者通过 Pages 绑定的 <strong><code>gh-pages</code> 根目录</strong>访问的才是 mdBook 站点。</p><br/><p></p>
+<hr><p>本文原载于公众号 Preface Lab：<a href="https://mp.weixin.qq.com/s/4lyJNhZRhkQso1nTLwSjYA">阅读公众号原文</a>。</p></article><aside class="toc"><h2>本文目录</h2><ol><li><a href="#section-0">一、前置条件</a></li><li><a href="#section-1">二、安装 mdBook</a></li><li><a href="#section-2">方式 A：通过 Cargo 安装（推荐）</a></li><li><a href="#section-3">方式 B：下载二进制（无需 Rust）</a></li><li><a href="#section-4">三、初始化项目</a></li><li><a href="#section-5">3.1 全新项目</a></li><li><a href="#section-6">3.2 已有 Markdown 仓库接入</a></li><li><a href="#section-7">四、book.toml 完整配置详解</a></li><li><a href="#section-8">五、SUMMARY.md 编写规则</a></li><li><a href="#section-9">5.1 基本语法</a></li><li><a href="#section-10">5.2 实战示例（本项目的 SUMMARY.md 结构）</a></li><li><a href="#section-11">5.3 规则速查</a></li><li><a href="#section-12">六、本地预览</a></li><li><a href="#section-13">七、自定义外观（可选）</a></li><li><a href="#section-14">7.1 覆盖主题变量</a></li><li><a href="#section-15">7.2 添加 favicon</a></li><li><a href="#section-16">7.3 启用 MathJax（数学公式）</a></li><li><a href="#section-17">八、GitHub Actions 自动部署</a></li><li><a href="#section-18">8.1 目录结构</a></li><li><a href="#section-19">8.2 deploy.yml 完整内容</a></li><li><a href="#section-20">8.3 GitHub 仓库设置</a></li><li><a href="#section-21">8.4 工作流说明</a></li><li><a href="#section-22">九、.gitignore 配置</a></li><li><a href="#section-23">十、项目最终结构参考</a></li><li><a href="#section-24">总结</a></li></ol><a class="back-top" href="#main">回到顶部 ↑</a></aside></div><section class="related"><div class="section-heading"><h2>最近的文章</h2></div><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="从一次登录开始，弄懂 MFA与动态验证码 输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统… 开发工具">
+<time datetime="2026-10-09">2026.10.09</time><div><a class="post-title" href="/zh/posts/mfa-totp-login/">从一次登录开始，弄懂 MFA与动态验证码</a>
+<p>输入密码，点击登录，网站又让你打开手机上的身份验证器，填入六位数字。刚才已经证明自己知道密码，为什么还要再做一次验证？ 先把登录页面放在这里。假如别人已经拿到了你的密码，服务器会怎样处理他的登录请求？ 只有密码验证的系统…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article><article class="post-row" data-post data-topic="tools" data-year="2026" data-search="我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目 最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用… 开发工具">
+<time datetime="2026-09-15">2026.09.15</time><div><a class="post-title" href="/zh/posts/ai-video-model-integration/">我把 AI 视频模型接入前最容易踩的坑，整理成了一个开源项目</a>
+<p>最近整理了一个小项目，叫 ModelCap。 它做的事情很朴素。把常见 AI 视频模型的能力、参数限制、输入素材要求、错误码和价格信息，整理成机器能读的 JSON，再给开发者一个 Node.js SDK 和命令行工具，用…</p><span class="post-category">开发工具</span></div><span class="row-arrow" aria-hidden="true">↗</span></article></section></main>
+<footer class="footer"><span>© 2026 Eva Lab<span class="footer-note"> · 学习、构建，持续记录。</span></span><div><a href="https://github.com/Eva-Dengyh">GitHub ↗</a><a href="/rss.xml">RSS ↗</a><a href="#main">↑ Top</a></div></footer></div></body></html>
