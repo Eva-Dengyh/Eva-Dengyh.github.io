@@ -72,7 +72,7 @@ class BuildTests(unittest.TestCase):
             self.assertIn('hreflang="en"', html)
             self.assertIn('hreflang="zh-CN"', html)
         self.assertIn(next(page['html'] for page in self.pages
-                           if page['locale'] == 'zh' and page['kind'] == 'about'),
+                           if page['locale'] == 'en' and page['kind'] == 'about'),
                       (self.output / 'index.html').read_text())
     def test_feed_preserves_publication_dates(self):
         feed = ET.parse(self.output / 'rss.xml')

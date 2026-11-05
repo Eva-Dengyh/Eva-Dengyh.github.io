@@ -16,7 +16,6 @@ TEXT = {
 }
 
 ARROW_ICON = '<svg class="link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M6 18 18 6M6 6h12v12"/></svg>'
-UP_ICON = '<svg class="link-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 20V4m-7 7 7-7 7 7"/></svg>'
 
 def plain(html):
     return re.sub(r'\s+', ' ', unescape(re.sub('<[^>]*>', ' ', html))).strip()
@@ -36,7 +35,7 @@ def destination(path):
 
 def language_paths(path, available):
     if path == '/':
-        return {'zh': '/', 'en': '/en/'}
+        return {'zh': '/zh/', 'en': '/'}
     other = 'en' if path.startswith('/zh/') else 'zh'
     counterpart = re.sub(r'^/(zh|en)/', f'/{other}/', path)
     pairs = {path.split('/')[1]: path}
@@ -61,10 +60,10 @@ def header(locale, section, pairs):
     <nav aria-label="{text['home']}">{nav}</nav><div class="languages" aria-label="Language">{'<span aria-hidden="true">/</span>'.join(languages)}</div></header>'''
 
 def shell(locale, path, title, description, body, section, available, schema=None):
-    canonical_path = '/' if path == '/zh/' else path
+    canonical_path = '/' if path == '/en/' else path
     pairs = language_paths(canonical_path, available)
-    if path == '/en/':
-        pairs['zh'] = '/'
+    if path == '/zh/':
+        pairs['en'] = '/'
     alternates = ''.join(f'<link rel="alternate" hreflang="{"zh-CN" if lang == "zh" else "en"}" href="{CONFIG["url"]}{route}">' for lang, route in pairs.items())
     data = json.dumps(schema, ensure_ascii=False).replace('<','\\u003c') if schema else ''
     return f'''<!doctype html><html lang="{'zh-CN' if locale == 'zh' else 'en'}"><head>
@@ -78,7 +77,7 @@ def shell(locale, path, title, description, body, section, available, schema=Non
 <link rel="alternate" type="application/rss+xml" title="Eva Lab · 中文" href="/rss.xml">
 <script src="/assets/site.js" defer></script>{'<script type="application/ld+json">'+data+'</script>' if schema else ''}</head>
 <body><div class="site">{header(locale,section,pairs)}<main id="main">{body}</main>
-<footer class="footer"><span>© {CONFIG['year']} Eva Lab<span class="footer-note"> · {TEXT[locale]['note']}</span></span><div><a href="{CONFIG['github']}">GitHub {ARROW_ICON}</a><a href="/rss.xml">RSS {ARROW_ICON}</a><a href="#main">{UP_ICON} Top</a></div></footer></div></body></html>'''
+<footer class="footer"><span>© {CONFIG['year']} Eva Lab<span class="footer-note"> · {TEXT[locale]['note']}</span></span></footer></div></body></html>'''
 
 def post_rows(posts, locale, limit=None):
     result = []
@@ -139,7 +138,7 @@ def build(output, pages):
         text = TEXT[locale]
         posts = sorted([p for p in pages if p['kind']=='post' and p['locale']==locale],key=lambda p:(p['date'],p['title']), reverse=True)
         about = next(p for p in pages if p['locale']==locale and p['kind']=='about')
-        for path, home in [(f'/{locale}/',True),(f'/{locale}/posts/',False)]+([('/',True)] if locale=='zh' else []):
+        for path, home in [(f'/{locale}/',True),(f'/{locale}/posts/',False)]+([('/',True)] if locale=='en' else []):
             body = profile_home(about, locale) if home else listing(posts, locale)
             description = excerpt(about) if home else CONFIG['intro'][locale]
             rendered[path] = shell(locale,path,text['hello'] if home else text['all'],description,body,'home' if home else 'posts',routes)
@@ -181,7 +180,7 @@ def write_support_files(output, rendered, pages):
         ET.SubElement(item,'pubDate').text = format_datetime(datetime.fromisoformat(page['date']).replace(tzinfo=timezone.utc),usegmt=True)
     ET.ElementTree(feed).write(output/'rss.xml',encoding='utf-8',xml_declaration=True)
     (output/'robots.txt').write_text(f'User-agent: *\nAllow: /\n\nSitemap: {CONFIG["url"]}/sitemap.xml\n')
-    urls = ''.join(f'<url><loc>{CONFIG["url"]}{path}</loc></url>' for path in sorted(rendered) if path!='/zh/')
+    urls = ''.join(f'<url><loc>{CONFIG["url"]}{path}</loc></url>' for path in sorted(rendered) if path!='/en/')
     (output/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+urls+'</urlset>')
     error = shell('zh','/404.html','页面未找到','页面不存在，请返回文章列表。','<section class="page-intro error"><p class="eyebrow">404 / NOT FOUND</p><h1>这一页还没有写好。</h1><p>链接可能已失效，或地址输入有误。</p><a href="/">返回首页 →</a></section>','',{'/404.html'})
     error = error.replace('name="robots" content="index,follow"', 'name="robots" content="noindex,follow"')
