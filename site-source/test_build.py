@@ -60,12 +60,20 @@ class BuildTests(unittest.TestCase):
             self.assertEqual(html.count('name="description"'), 1)
             self.assertEqual(html.count('rel="canonical"'), 1)
             self.assertNotIn('__NEXT_DATA__', html)
-    def test_home_lists_real_articles_and_bilingual_routes(self):
+    def test_home_introduces_the_author_and_keeps_content_navigation(self):
         for locale in ['zh','en']:
             html = (self.output / locale / 'index.html').read_text()
-            self.assertIn('FastSAM-Demo', html)
+            about = next(page for page in self.pages
+                         if page['locale'] == locale and page['kind'] == 'about')
+            self.assertIn(about['html'], html)
+            self.assertNotIn('data-listing', html)
+            self.assertIn(f'href="/{locale}/posts/"', html)
+            self.assertIn(f'href="/{locale}/projects/"', html)
             self.assertIn('hreflang="en"', html)
             self.assertIn('hreflang="zh-CN"', html)
+        self.assertIn(next(page['html'] for page in self.pages
+                           if page['locale'] == 'zh' and page['kind'] == 'about'),
+                      (self.output / 'index.html').read_text())
     def test_feed_preserves_publication_dates(self):
         feed = ET.parse(self.output / 'rss.xml')
         items = feed.findall('./channel/item')

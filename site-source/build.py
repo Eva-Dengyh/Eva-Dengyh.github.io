@@ -43,7 +43,9 @@ def language_paths(path, available):
 
 def header(locale, section, pairs):
     text = TEXT[locale]
-    nav = ''.join(f'<a href="/{locale}/{key}/" {"aria-current=page" if section == key else ""}>{text[key]}</a>' for key in ['posts','projects','about'])
+    nav_routes = [('home', f'/{locale}/'), ('posts', f'/{locale}/posts/'), ('projects', f'/{locale}/projects/')]
+    active = 'home' if section == 'about' else section
+    nav = ''.join(f'<a href="{route}" {"aria-current=page" if active == key else ""}>{text[key]}</a>' for key, route in nav_routes)
     languages = []
     for lang, label in [('zh','中文'),('en','EN')]:
         if lang in pairs:
@@ -94,28 +96,20 @@ def sidebar(posts, locale):
             buttons += f'<button data-topic-filter="{key}" aria-pressed="false">{CONFIG["topics"][key][locale]}<span>{count:02}</span></button>'
     years = sorted({p['date'][:4] for p in posts}, reverse=True)
     archive = ''.join(f'<a href="/{locale}/posts/?year={year}">{year}<span>↗</span></a>' for year in years)
-    return f'''<aside class="sidebar"><section><h3>{text['topics']}</h3><div class="topic-list">{buttons}</div></section><section><h3>{text['archive']}</h3>{archive}</section><section class="sidebar-note"><span class="mono">README.md</span><p>{text['intro']}</p><a href="/{locale}/about/">{text['about']} ↗</a></section></aside>'''
+    return f'''<aside class="sidebar"><section><h3>{text['topics']}</h3><div class="topic-list">{buttons}</div></section><section><h3>{text['archive']}</h3>{archive}</section><section class="sidebar-note"><span class="mono">README.md</span><p>{text['intro']}</p><a href="/{locale}/">{text['about']} ↗</a></section></aside>'''
 
-def project_preview(page, locale):
-    # Pull titles and first descriptions from the preserved project HTML.
-    matches = re.findall(r'<h3><a href="([^"]+)"[^>]*>(.*?)</a></h3>.*?<p>(.*?)</p>', page['html'], re.S)
-    entries = []
-    for url, title, description in matches[:2]:
-        entries.append(f'<article><a href="{escape(url,quote=True)}">{escape(plain(title))}<span>↗</span></a><p>{escape(plain(description)[:135])}</p></article>')
-    return f'<section class="project-preview"><div class="section-heading"><h2>{TEXT[locale]["projects"]}</h2><a href="/{locale}/projects/">{TEXT[locale]["more"]} ↗</a></div><div class="project-grid">{"".join(entries)}</div></section>'
-
-def listing(posts, locale, home, project):
+def profile_home(page, locale):
     text = TEXT[locale]
-    intro = f'''<section class="intro"><div><p class="eyebrow">{text['role']}</p><h1>{text['hello']}</h1><p class="intro-text">{CONFIG['intro'][locale]}</p>
-<div class="social"><a href="{CONFIG['github']}">GitHub <span>↗</span></a><a href="/{locale}/about/">{text['about']} <span>↗</span></a><a href="/rss.xml">{text['feed']} <span>↗</span></a></div></div><div class="intro-code" aria-hidden="true"><div class="code-filename"><span>eva.ts</span><span class="code-dot"></span></div><pre><span class="syntax-comment">// always a work in progress</span>
-<span class="syntax-keyword">const</span> eva = {{
-  role: <span class="syntax-string">"developer"</span>,
-  focus: <span class="syntax-string">"AI &amp; software"</span>
-}};</pre></div></section>''' if home else f'<section class="page-intro"><p class="eyebrow">WRITING / ARCHIVE</p><h1>{text["all"]}<span class="total">{len(posts):02}</span></h1><p>{text["intro"]}</p></section>'
+    return f'''<section class="page-intro"><p class="eyebrow">ABOUT / EVA</p><h1>{text['hello']}</h1>
+<div class="social"><a href="/{locale}/posts/">{text['posts']} ↗</a><a href="/{locale}/projects/">{text['projects']} ↗</a><a href="{CONFIG['github']}">GitHub ↗</a></div></section>
+<div class="prose about-content">{page['html']}</div>'''
+
+def listing(posts, locale):
+    text = TEXT[locale]
+    intro = f'<section class="page-intro"><p class="eyebrow">WRITING / ARCHIVE</p><h1>{text["all"]}<span class="total">{len(posts):02}</span></h1><p>{text["intro"]}</p></section>'
     search = f'''<div class="search-wrap"><label for="search" class="sr-only">{text['search']}</label><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="{text['placeholder']}" autocomplete="off"><span class="search-hint" aria-hidden="true">/</span></div>'''
-    heading = text['latest'] if home else text['posts']
-    return f'''{intro}<section class="writing" data-listing data-preview-limit="{6 if home else 0}"><div class="writing-main"><div class="section-heading"><h2>{heading}<span class="total">{len(posts):02}</span></h2><a href="/{locale}/posts/">{text['all']} ↗</a></div>
-{search}<p id="result-count" class="result-count" aria-live="polite" data-unit="{text['result']}"></p><div class="post-list">{post_rows(posts,locale)}</div><p id="empty" hidden>{text['empty']}</p></div>{sidebar(posts,locale)}</section>{project_preview(project,locale) if home else ''}'''
+    return f'''{intro}<section class="writing" data-listing data-preview-limit="0"><div class="writing-main"><div class="section-heading"><h2>{text['posts']}<span class="total">{len(posts):02}</span></h2><a href="/{locale}/posts/">{text['all']} ↗</a></div>
+{search}<p id="result-count" class="result-count" aria-live="polite" data-unit="{text['result']}"></p><div class="post-list">{post_rows(posts,locale)}</div><p id="empty" hidden>{text['empty']}</p></div>{sidebar(posts,locale)}</section>'''
 
 def article(page, locale, all_posts):
     text = TEXT[locale]
@@ -141,9 +135,11 @@ def build(output, pages):
     for locale in ['zh','en']:
         text = TEXT[locale]
         posts = sorted([p for p in pages if p['kind']=='post' and p['locale']==locale],key=lambda p:(p['date'],p['title']), reverse=True)
-        project = next(p for p in pages if p['locale']==locale and p['kind']=='projects')
+        about = next(p for p in pages if p['locale']==locale and p['kind']=='about')
         for path, home in [(f'/{locale}/',True),(f'/{locale}/posts/',False)]+([('/',True)] if locale=='zh' else []):
-            rendered[path] = shell(locale,path,text['hello'] if home else text['all'],CONFIG['intro'][locale],listing(posts,locale,home,project),'home' if home else 'posts',routes)
+            body = profile_home(about, locale) if home else listing(posts, locale)
+            description = excerpt(about) if home else CONFIG['intro'][locale]
+            rendered[path] = shell(locale,path,text['hello'] if home else text['all'],description,body,'home' if home else 'posts',routes)
         for page in (p for p in pages if p['locale']==locale):
             if page['kind']=='post':
                 body = article(page,locale,[p for p in pages if p['kind']=='post'])
